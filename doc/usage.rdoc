@@ -1,0 +1,54 @@
+= Usage
+
+Add OSC 7501 status alongside an ordinary RSpec formatter.
+See the {README}[rdoc-ref:README.md] for source installation.
+
+== Configure a project
+
+Add these options to your project's <tt>.rspec</tt>:
+
+  --require rspec/osc7501
+  --format progress
+  --format RSpec::OSC7501::Formatter
+
+Run <tt>bundle exec rspec</tt>. RSpec prints ordinary progress and sends status
+frames to the formatter's TTY output. A terminal with OSC 7501 support can show
+the suite status.
+
+== Keep JSON separate
+
+Give each formatter its own destination. RSpec applies <tt>--out</tt> to the
+preceding formatter:
+
+  bundle exec rspec --require rspec/osc7501 \
+    --format json --out results.json \
+    --format progress --out /dev/stdout \
+    --format RSpec::OSC7501::Formatter --out /dev/stderr
+
+This Unix example writes JSON to <tt>results.json</tt>, progress to stdout, and
+status to stderr. The OSC formatter stays silent if stderr is not a TTY.
+
+== Capture frames (optional)
+
+Set <tt>RSPEC_OSC7501=force</tt> to permit redirected status output:
+
+  RSPEC_OSC7501=force bundle exec rspec --require rspec/osc7501 \
+    --format progress --out /dev/stdout \
+    --format RSpec::OSC7501::Formatter --out status.osc
+
+<tt>status.osc</tt> contains terminal control sequences. Keep it separate from
+JSON and other machine-readable reports.
+
+== Set a title (optional)
+
+Set the title for one run:
+
+  RSPEC_OSC7501_TITLE='Payments specs' bundle exec rspec
+
+This command assumes the <tt>.rspec</tt> configuration above. The default title
+is <tt>RSpec</tt>.
+
+== Disable status
+
+Set <tt>RSPEC_OSC7501=off</tt> to disable frames while retaining the formatter
+configuration. See {Behavior}[rdoc-ref:doc/behavior.rdoc] for settings and limits.

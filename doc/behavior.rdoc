@@ -1,0 +1,83 @@
+= Behavior
+
+RSpec::OSC7501::Formatter reports one RSpec suite through OSC 7501. Requiring
+<tt>rspec/osc7501</tt> registers the formatter without selecting it. Select an
+ordinary formatter too if you want RSpec's progress or documentation output.
+
+== Output and settings
+
+The formatter uses the stream RSpec supplies, including <tt>--out</tt>. It leaves
+that stream open. Settings apply when RSpec constructs the formatter.
+
+[<tt>RSPEC_OSC7501=auto</tt>]
+  Emit to a TTY. This is the default, including an unset variable.
+[<tt>RSPEC_OSC7501=off</tt>]
+  Emit no frames.
+[<tt>RSPEC_OSC7501=force</tt>]
+  Emit to the selected stream even if it is not a TTY.
+[<tt>RSPEC_OSC7501_TITLE</tt>]
+  Set a stable suite title. Default: <tt>RSpec</tt>.
+
+Other mode values raise ArgumentError. A supporting terminal determines how to
+display status. The formatter sends no capability query and reads no stdin.
+Use one reporting RSpec process per terminal. Concurrent processes replace the
+same root status record, without worker aggregation.
+
+== Progress and outcomes
+
+The first frame reports <tt>working</tt>. Example events update the current
+description and completed, failed, and pending counts. Progress divides completed
+results by the initial example count and stays within 0 to 100. Pending examples
+count as completed. Zero-example runs omit progress.
+
+Intermediate updates occur at most once per 100 ms. Initial and final updates
+bypass throttling. A dry run identifies itself in its messages.
+
+The final frame includes RSpec's summary counts and duration, with no progress:
+
+[<tt>done</tt>]
+  The suite completed without a failure condition.
+[<tt>error</tt>]
+  Failures, outside-example errors, a nonzero SystemExit, or another active
+  exception ended the run. An empty suite with <tt>fail_if_no_examples</tt> also
+  reports error.
+[<tt>idle</tt>]
+  Interrupt, a successful early SystemExit, or an otherwise unexplained early-stop
+  request ended the run.
+
+The formatter reads RSpec's private early-stop flag at summary time. A reached
+fail-fast threshold or outside-example error takes precedence over that flag.
+A coincident SIGINT can therefore report error. An early stop after a failure
+can report idle and retain the failure count. The formatter preserves RSpec's
+exit status.
+
+Close emits no additional frame after a summary. A started run that closes
+without a summary reports an incomplete error once.
+
+== Reporting limits
+
+RSpec must invoke formatter callbacks for a final result. Exits before formatter
+installation, load-time SystemExit, forced termination, and a second SIGINT can
+bypass those callbacks. A later <tt>at_exit</tt> failure can occur after the
+formatter's result. The formatter installs no signal handler or process-wide
+exit hook.
+
+== Wire format
+
+Each frame addresses the root record, repeats <tt>app=rspec</tt>, title, and
+message, and ends with ST (ESC followed by a backslash). The formatter writes each
+frame in one call and sends no clear-on-close record.
+
+Title and message contain valid UTF-8 encoded as standard Base64. The formatter
+removes control characters in U+0000 through U+001F and U+007F through U+009F,
+replaces invalid encoding, and truncates on character boundaries. Decoded titles
+are at most 192 bytes, decoded messages at most 2048 bytes, and frames at most
+4096 bytes.
+
+IOError or SystemCallError disables further status output for that formatter
+instance. Other exceptions propagate.
+
+== Compatibility
+
+The gem requires Ruby >= 3.3 and <tt>rspec-core</tt> >= 3.12, < 4. MRI is the
+supported Ruby engine. Other engines and RSpec 4 are unverified.

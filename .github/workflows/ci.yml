@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            ruby: "3.3"
+            rspec_minor: "3.12"
+            rspec_core: "3.12.0"
+          - os: ubuntu-latest
+            ruby: "3.3"
+            rspec_minor: "3.13"
+            rspec_core: "~> 3.13.0"
+          - os: ubuntu-latest
+            ruby: "3.4"
+            rspec_minor: "3.13"
+            rspec_core: "~> 3.13.0"
+          - os: ubuntu-latest
+            ruby: "4.0"
+            rspec_minor: "3.13"
+            rspec_core: "~> 3.13.0"
+          - os: macos-latest
+            ruby: "3.4"
+            rspec_minor: "3.13"
+            rspec_core: "~> 3.13.0"
+    runs-on: ${{ matrix.os }}
+    env:
+      RSPEC_MINOR: ${{ matrix.rspec_minor }}
+      RSPEC_CORE_VERSION: ${{ matrix.rspec_core }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+          cache-version: ${{ matrix.rspec_minor }}-${{ matrix.rspec_core }}
+      - run: bundle exec rake spec package rdoc
+      - run: gem install pkg/*.gem --local --install-dir tmp/gem-home --ignore-dependencies --no-document
+      - run: |
+          ruby -I"$(bundle show rspec-core)/lib" \
+               -I"$(bundle show rspec-support)/lib" \
+               -I"$(find tmp/gem-home/gems -maxdepth 1 -type d -name 'rspec-osc7501-*' -print -quit)/lib" \
+               -r rspec/osc7501 -e "
+            entrypoint = \$LOADED_FEATURES.find { |file| file.end_with?('/rspec/osc7501.rb') }
+            abort unless entrypoint && File.realpath(entrypoint).start_with?(File.realpath('tmp/gem-home') + '/')
+            abort unless defined?(RSpec::OSC7501::Formatter)
+          "
