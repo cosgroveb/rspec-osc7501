@@ -1,7 +1,7 @@
 = Usage
 
 Add OSC 7501 status alongside an ordinary RSpec formatter.
-See the {README}[rdoc-ref:README.md] for source installation.
+See the {README}[rdoc-ref:README.md] for installation.
 
 == Configure a project
 

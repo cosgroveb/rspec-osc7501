@@ -8,14 +8,12 @@ Requires MRI Ruby 3.3 or newer and `rspec-core >= 3.12, < 4`.
 
 ## Install
 
-This gem is unreleased. Add the source branch to your Gemfile:
+Add the gem to your Gemfile:
 
 ```ruby
 group :test do
   gem "rspec"
-  gem "rspec-osc7501",
-      git: "https://github.com/cosgroveb/rspec-osc7501",
-      branch: "feature/osc7501-formatter"
+  gem "rspec-osc7501", "~> 0.1"
 end
 ```
 
