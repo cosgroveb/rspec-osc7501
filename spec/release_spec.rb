@@ -289,6 +289,12 @@ RSpec.describe Release, :aggregate_failures do
     expect(release.check_gem(gem)).to be(true)
   end
 
+  it 'rejects a missing download during preflight instead of treating the version as absent' do
+    gem = build_gem('candidate')
+    allow(release).to receive(:http_get).and_return([200, '{}'], [404, 'missing'])
+    expect { release.check_gem(gem) }.to raise_error(Release::DownloadNotVisible)
+  end
+
   context 'when checking an existing GitHub release' do
     let(:state) { prepare_release }
     let(:existing) do
@@ -403,6 +409,85 @@ RSpec.describe Release, :aggregate_failures do
         release.publish(retry_dir, gem)
         summary = JSON.parse(File.read(File.join(retry_dir, 'publication.json')))
         expect(summary).to include('rubygems' => 'published', 'github' => 'published')
+      end
+    end
+  end
+
+  context 'when RubyGems publication is not immediately visible' do
+    let(:gem) { build_gem('candidate') }
+    let(:clock) { { seconds: 0.0 } }
+    let(:responses) do
+      [[404, 'missing'], [404, 'missing'], [200, '{}'], [404, 'missing'],
+       [200, '{}'], [200, File.binread(gem)]]
+    end
+
+    before do
+      prepare_release
+      allow(release).to receive(:monotonic_time) { clock[:seconds] }
+      allow(release).to receive(:sleep) { |seconds| clock[:seconds] += seconds }
+      allow(release).to receive(:http_get) { responses.shift || [404, 'missing'] }
+      allow(release).to receive(:check_release).and_return(false)
+      allow(release).to receive(:create_release)
+      allow(release).to receive(:run).and_call_original
+      allow(release).to receive(:run).with('gem', 'push', gem)
+    end
+
+    it 'waits for metadata and download visibility without another upload', :aggregate_failures do
+      release.publish(artifacts, gem)
+      expect(release).to have_received(:sleep).with(5).twice
+      expect(release).to have_received(:run).with('gem', 'push', gem).once
+      expect(release).to have_received(:create_release).once
+    end
+
+    context 'when visibility never arrives' do
+      let(:responses) { [] }
+
+      it 'fails after five minutes without creating a GitHub release', :aggregate_failures do
+        expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /could not be verified/)
+        expect(clock[:seconds]).to eq(300)
+        expect(release).not_to have_received(:create_release)
+        expect(release).to have_received(:run).with('gem', 'push', gem).once
+      end
+
+      it 'retains confirmed upload status on timeout' do
+        expect { release.publish(artifacts, gem) }.to raise_error(Release::Error)
+        summary = JSON.parse(File.read(File.join(artifacts, 'publication.json')))
+        expect(summary).to include('rubygems' => 'published', 'github' => 'incomplete')
+      end
+    end
+
+    context 'when a request takes most of the polling budget' do
+      before do
+        allow(release).to receive(:check_gem) do
+          clock[:seconds] += 298
+          false
+        end
+      end
+
+      it 'counts request time and does not poll after the deadline', :aggregate_failures do
+        expect { release.send(:await_gem, gem) }.to raise_error(Release::Error)
+        expect(release).to have_received(:sleep).with(2).once
+        expect(release).to have_received(:check_gem).once
+      end
+    end
+
+    [401, 403, 429, 500].each do |status|
+      context "when verification returns HTTP #{status}" do
+        let(:responses) { [[404, 'missing'], [status, 'failed']] }
+
+        it 'fails immediately', :aggregate_failures do
+          expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /HTTP #{status}/)
+          expect(release).not_to have_received(:sleep)
+        end
+      end
+    end
+
+    context 'when downloaded contents differ' do
+      let(:responses) { [[404, 'missing'], [200, '{}'], [200, File.binread(build_gem('changed', text: 'changed'))]] }
+
+      it 'fails immediately', :aggregate_failures do
+        expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /differs/)
+        expect(release).not_to have_received(:sleep)
       end
     end
   end

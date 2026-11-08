@@ -18,4 +18,6 @@ end
 
 RSpec.configure do |config|
   config.include FrameHelpers
+  config.order = :random
+  Kernel.srand config.seed
 end
