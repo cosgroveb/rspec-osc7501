@@ -3,6 +3,13 @@ name: CI
 on:
   push:
   pull_request:
+  workflow_call:
+    inputs:
+      release-artifact:
+        description: Prepared release bundle from the calling workflow
+        type: string
+        required: false
+        default: ""
 
 permissions:
   contents: read
@@ -38,8 +45,22 @@ jobs:
       RSPEC_MINOR: ${{ matrix.rspec_minor }}
       RSPEC_CORE_VERSION: ${{ matrix.rspec_core }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: ruby/setup-ruby@v1
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - if: inputs.release-artifact != ''
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.release-artifact }}
+          path: ${{ runner.temp }}/release
+      - if: inputs.release-artifact != ''
+        uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: false
+      - if: inputs.release-artifact != ''
+        run: ruby script/release.rb restore "$RUNNER_TEMP/release"
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true

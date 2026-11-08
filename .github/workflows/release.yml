@@ -1,0 +1,137 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable version to release (for example 0.1.1)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: ${{ steps.prepare.outputs.artifact }}
+      sha: ${{ steps.prepare.outputs.sha }}
+      tag: ${{ steps.prepare.outputs.tag }}
+    steps:
+      - name: Require main
+        run: test "$GITHUB_REF" = refs/heads/main
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: false
+      - name: Prepare release commit
+        id: prepare
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          ruby script/release.rb prepare "$RELEASE_VERSION" "$RUNNER_TEMP/release"
+          ruby -rjson -e '
+            state = JSON.parse(File.read(File.join(ENV.fetch("RUNNER_TEMP"), "release/state.json")))
+            File.open(ENV.fetch("GITHUB_OUTPUT"), "a") do |output|
+              output.puts "sha=#{state.fetch("release_sha")}", "tag=#{state.fetch("tag")}",
+                          "artifact=release-source-#{ENV.fetch("GITHUB_RUN_ID")}-#{ENV.fetch("GITHUB_RUN_ATTEMPT")}"
+            end
+          '
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.prepare.outputs.artifact }}
+          path: ${{ runner.temp }}/release
+          if-no-files-found: error
+
+  test:
+    needs: prepare
+    uses: ./.github/workflows/ci.yml
+    with:
+      release-artifact: ${{ needs.prepare.outputs.artifact }}
+
+  publish:
+    needs: [prepare, test]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ needs.prepare.outputs.artifact }}
+          path: ${{ runner.temp }}/release
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: false
+      - name: Restore tested source
+        run: ruby script/release.rb restore "$RUNNER_TEMP/release"
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+        with:
+          ruby-version: "3.4"
+          bundler-cache: true
+      - name: Build release gem
+        run: bundle exec rake package
+      - name: Check existing gem
+        id: gem
+        run: |
+          ruby script/release.rb check-gem pkg/*.gem > "$RUNNER_TEMP/gem-status.json"
+          ruby -rjson -e '
+            status = JSON.parse(File.read(File.join(ENV.fetch("RUNNER_TEMP"), "gem-status.json")))
+            File.open(ENV.fetch("GITHUB_OUTPUT"), "a") { |output| output.puts "published=#{status.fetch("published")}" }
+          '
+      - if: steps.gem.outputs.published == 'false'
+        uses: rubygems/configure-rubygems-credentials@a3462e5c07dc676007e359eddef1949756fd3102 # main, 2026-11-08
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh auth setup-git
+          ruby script/release.rb publish "$RUNNER_TEMP/release" pkg/*.gem
+      - name: Preserve release artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-result-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/release
+            pkg/*.gem
+          if-no-files-found: error
+
+  summary:
+    if: always()
+    needs: [prepare, test, publish]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report release outcome
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_SHA: ${{ needs.prepare.outputs.sha }}
+          RELEASE_TAG: ${{ needs.prepare.outputs.tag }}
+          PREPARE_RESULT: ${{ needs.prepare.result }}
+          TEST_RESULT: ${{ needs.test.result }}
+          PUBLISH_RESULT: ${{ needs.publish.result }}
+        run: |
+          {
+            printf 'Release version: %s\n\n' "$RELEASE_VERSION"
+            printf 'Commit: %s\n\nTag: %s\n\n' "$RELEASE_SHA" "$RELEASE_TAG"
+            printf '| Stage | Result |\n| --- | --- |\n'
+            printf '| Prepare | %s |\n| Test | %s |\n| Publish | %s |\n' "$PREPARE_RESULT" "$TEST_RESULT" "$PUBLISH_RESULT"
+            printf '\nSee the Publish release step summary for separate RubyGems and GitHub publication states. If that step did not run: RubyGems status unknown; GitHub Release status unknown. This run attempted no publication.\n'
+          } >> "$GITHUB_STEP_SUMMARY"
