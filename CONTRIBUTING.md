@@ -61,6 +61,14 @@ blank. The workflow uses short-lived OIDC credentials, with no RubyGems token
 stored in GitHub secrets. Repository Actions permissions must permit the
 workflow's `contents: write` and `id-token: write` requests.
 
+Store a dedicated write-enabled repository deploy key as the Actions secret
+`RELEASE_DEPLOY_KEY`. Only the publish job uses it to push the tested commit
+and tag. Require PRs and CI checks in a separate ruleset with deploy-key bypass,
+and keep deletion and force-push protection in a ruleset without bypasses.
+GitHub applies this bypass to all repository deploy keys, so additional write
+deploy keys would receive the same access. GitHub API calls still use the
+workflow token, and RubyGems still uses OIDC.
+
 ### Failed releases
 
 Inspect the run and its publication summary:
