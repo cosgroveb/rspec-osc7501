@@ -79,6 +79,11 @@ replaces invalid encoding, and truncates on character boundaries. Decoded titles
 are at most 192 bytes, decoded messages at most 2048 bytes, and frames at most
 4096 bytes.
 
+Before sanitization, the formatter keeps at most 288 input bytes for titles and
+3072 for messages. This bounds sanitization work with 50% headroom for stripped
+controls. Control-heavy input can produce shorter output. A character split by
+the input cap becomes a replacement character before the final output limit.
+
 IOError or SystemCallError disables further status output for that formatter
 instance. Other exceptions propagate.
 

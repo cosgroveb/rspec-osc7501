@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Bound text sanitization input to 150% of each field's output byte limit.
 - Ignore caller exceptions already active when the suite starts.
 - Report failures for zero and negative fail-fast thresholds.
 - Flush status frames when supported and accept streams without TTY detection.

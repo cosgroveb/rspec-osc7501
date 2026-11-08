@@ -63,6 +63,27 @@ RSpec.describe RSpec::OSC7501::Writer do
     expect(output.string.bytesize).to be <= 4096
   end
 
+  it "bounds sanitization input even when controls leave room in the output" do
+    title = "\0" * 288 + "discarded"
+    message = "\0" * 3072 + "discarded"
+    described_class.new(output, mode: "force", title: title).emit(state: "working", msg: message)
+    expect(frames(output.string).fetch(0)).to include("title" => "", "msg" => "")
+  end
+
+  it "uses sanitization headroom to fill the output after stripping controls" do
+    title = "\0" * 96 + "t" * 192
+    message = "\0" * 1024 + "m" * 2048
+    described_class.new(output, mode: "force", title: title).emit(state: "working", msg: message)
+    expect(frames(output.string).fetch(0)).to include("title" => "t" * 192, "msg" => "m" * 2048)
+  end
+
+  ["\0" * 287 + "界", ("\0" * 143 + "😀").encode("UTF-16LE")].each do |title|
+    it "replaces a character split by the input cap in #{title.encoding}" do
+      described_class.new(output, mode: "force", title: title).emit(state: "done", msg: "complete")
+      expect(frames(output.string).fetch(0)).to include("title" => "�")
+    end
+  end
+
   it "omits progress from terminal states" do
     described_class.new(output, mode: "force", title: "RSpec").emit(state: "done", msg: "complete", progress: 100)
     expect(frames(output.string).fetch(0)).not_to have_key("progress")

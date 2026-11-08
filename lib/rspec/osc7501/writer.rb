@@ -27,13 +27,19 @@ module RSpec
       private
 
       def encode(text, byte_limit)
-        clean = text.to_s.encode("UTF-8", invalid: :replace, undef: :replace).gsub(/[\u0000-\u001F\u007F-\u009F]/, "")
+        input = text.to_s.byteslice(0, sanitization_byte_limit(byte_limit))
+        clean = input.encode("UTF-8", invalid: :replace, undef: :replace).gsub(/[\u0000-\u001F\u007F-\u009F]/, "")
         bytes = 0
         bounded = clean.each_char.take_while do |char|
           bytes += char.bytesize
           bytes <= byte_limit
         end.join
         [bounded].pack("m0")
+      end
+
+      # Bound sanitization work with 50% headroom for stripped controls.
+      def sanitization_byte_limit(output_byte_limit)
+        output_byte_limit + output_byte_limit / 2
       end
     end
   end
