@@ -12,6 +12,7 @@ require 'tempfile'
 # Release bookkeeping stays outside the gem's runtime library.
 class Release
   class Error < StandardError; end
+  class DownloadNotVisible < Error; end
 
   VERSION_FILE = 'lib/rspec/osc7501/version.rb'
   REPOSITORY = 'cosgroveb/rspec-osc7501'
@@ -141,6 +142,7 @@ class Release
 
     def verify_download(path, version)
       status, bytes = http_get("https://rubygems.org/downloads/rspec-osc7501-#{version}.gem")
+      raise DownloadNotVisible, 'RubyGems download HTTP 404' if status == 404
       raise Error, "RubyGems download HTTP #{status}" unless status == 200
 
       Tempfile.create(['published-gem', '.gem']) do |file|
@@ -150,6 +152,27 @@ class Release
         verify_gem(path, file.path)
       end
       true
+    end
+
+    def await_gem(path)
+      deadline = monotonic_time + 300
+      while monotonic_time < deadline
+        return if gem_visible?(path)
+
+        delay = [5, deadline - monotonic_time].min
+        sleep(delay) if delay.positive?
+      end
+      raise Error, 'RubyGems publication could not be verified within 300 seconds'
+    end
+
+    def gem_visible?(path)
+      check_gem(path)
+    rescue DownloadNotVisible
+      false
+    end
+
+    def monotonic_time
+      Process.clock_gettime(Process::CLOCK_MONOTONIC)
     end
 
     def gem_contents(path)
@@ -180,7 +203,8 @@ class Release
       end
       [response.code.to_i, response.body]
     end
-    private :candidate_spec, :verify_download, :gem_contents, :payload_contents, :http_get
+    private :candidate_spec, :verify_download, :await_gem, :gem_visible?, :monotonic_time,
+            :gem_contents, :payload_contents, :http_get
   end
 
   # Publishes validated source and records partial publication outcomes.
@@ -247,7 +271,7 @@ class Release
       summary['rubygems'] = 'unknown'
       run('gem', 'push', gem_path)
       summary['rubygems'] = 'published'
-      raise Error, 'RubyGems publication could not be verified' unless check_gem(gem_path)
+      await_gem(gem_path)
     end
 
     def publish_github(state, notes_file, summary)

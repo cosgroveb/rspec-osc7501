@@ -49,7 +49,7 @@ class CLISuite
   end
 
   def command
-    [RbConfig.ruby, '-S', 'bundle', 'exec', 'rspec', '-r', 'rspec/osc7501',
+    [RbConfig.ruby, '-S', 'bundle', 'exec', 'rspec', '--order', 'defined', '-r', 'rspec/osc7501',
      *formatter_options, '-f', 'progress', *@options, 'sample_spec.rb']
   end
 
