@@ -104,6 +104,36 @@ RSpec.describe "RSpec CLI integration" do
     expect(frames(output).last).to include("state" => "error", "msg" => a_string_including("2 examples, 2 failures"))
   end
 
+  [0, -1].each do |threshold|
+    it "reports failure for fail-fast threshold #{threshold}" do
+      source = 'RSpec.describe("fast") { it("fails") { raise "failure" }; it("skips") {} }'
+      output, _, status = run_suite(source, "--fail-fast=#{threshold}")
+      expect(status.exitstatus).to eq(1)
+      expect(frames(output).last).to include("state" => "error", "msg" => a_string_including("1 example, 1 failure"))
+    end
+  end
+
+  [["RuntimeError", "nil", 0, "done"], ["Interrupt", 'raise "failure"', 1, "error"],
+   ["RuntimeError", "exit 0", 0, "idle"]].each do |exception, body, exit_status, state|
+    it "reports #{state} for a run inside rescue #{exception}" do
+      script = <<~RUBY
+        require "rspec/osc7501"
+        require "stringio"
+        RSpec.describe("embedded") { it("runs") { #{body} } }
+        begin
+          raise #{exception}, "caller exception"
+        rescue #{exception}
+          exit RSpec::Core::Runner.run(["-f", "RSpec::OSC7501::Formatter"], StringIO.new, $stdout)
+        end
+      RUBY
+      output, error, status = Open3.capture3({ "RSPEC_OSC7501" => "force" }, RbConfig.ruby,
+                                           "-I", File.expand_path("../lib", __dir__), "-e", script)
+      expect(error).to be_empty
+      expect(status.exitstatus).to eq(exit_status)
+      expect(frames(output).last).to include("state" => state)
+    end
+  end
+
   it "reports the first SIGINT with remaining examples as idle" do
     source = 'RSpec.describe("interrupt") { it("signals") { Process.kill("INT", Process.pid); sleep 0.02 }; it("never runs") { raise "ran" } }'
     output, _, status = run_suite(source)

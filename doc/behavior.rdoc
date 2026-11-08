@@ -7,10 +7,12 @@ ordinary formatter too if you want RSpec's progress or documentation output.
 == Output and settings
 
 The formatter uses the stream RSpec supplies, including <tt>--out</tt>. It leaves
-that stream open. Settings apply when RSpec constructs the formatter.
+that stream open and flushes each frame when the stream supports flushing.
+Settings apply when RSpec constructs the formatter.
 
 [<tt>RSPEC_OSC7501=auto</tt>]
-  Emit to a TTY. This is the default, including an unset variable.
+  Emit to a TTY. Streams without <tt>tty?</tt> remain silent.
+  This is the default, including an unset variable.
 [<tt>RSPEC_OSC7501=off</tt>]
   Emit no frames.
 [<tt>RSPEC_OSC7501=force</tt>]
@@ -47,9 +49,12 @@ The final frame includes RSpec's summary counts and duration, with no progress:
 
 The formatter reads RSpec's private early-stop flag at summary time. A reached
 fail-fast threshold or outside-example error takes precedence over that flag.
+Zero and negative fail-fast thresholds follow RSpec's threshold comparison.
 A coincident SIGINT can therefore report error. An early stop after a failure
 can report idle and retain the failure count. The formatter preserves RSpec's
 exit status.
+
+An exception already active when the suite starts does not determine its result.
 
 Close emits no additional frame after a summary. A started run that closes
 without a summary reports an incomplete error once.

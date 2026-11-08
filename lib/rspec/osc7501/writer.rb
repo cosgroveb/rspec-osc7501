@@ -7,7 +7,7 @@ module RSpec
         raise ArgumentError, "RSPEC_OSC7501 must be auto, off, or force" unless %w[auto off force].include?(mode)
 
         @output = output
-        @enabled = mode == "force" || (mode == "auto" && output.tty?)
+        @enabled = mode == "force" || (mode == "auto" && output.respond_to?(:tty?) && output.tty?)
         @title = encode(title, 192) if @enabled
       rescue IOError, SystemCallError
         @enabled = false
@@ -19,6 +19,7 @@ module RSpec
         fields = ["app=rspec", "title=#{@title}", "state=#{state}", "msg=#{encode(msg, 2048)}"]
         fields << "progress=#{progress.to_i.clamp(0, 100)}" if state == "working" && !progress.nil?
         @output.write("\e]7501;#{fields.join(':')}\e\\")
+        @output.flush if @output.respond_to?(:flush)
       rescue IOError, SystemCallError
         @enabled = false
       end

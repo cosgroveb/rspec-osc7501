@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "spec_helper"
+require "tempfile"
 
 RSpec.describe RSpec::OSC7501::Writer do
   let(:output) { StringIO.new }
@@ -12,6 +13,36 @@ RSpec.describe RSpec::OSC7501::Writer do
     expect(output.string).to start_with("\e]7501;")
     expect(output.string).to end_with("\e\\")
     expect(frames(output.string)).to eq([{ "app" => "rspec", "title" => "Suite", "state" => "working", "msg" => "running", "progress" => "35" }])
+    expect(output).not_to be_closed
+  end
+
+  it "flushes frames to a buffered stream without closing it" do
+    Tempfile.create("osc7501") do |file|
+      writer = described_class.new(file, mode: "force", title: "RSpec")
+      writer.emit(state: "working", msg: "running")
+      expect(frames(File.read(file.path)).last).to include("state" => "working")
+      writer.emit(state: "done", msg: "complete")
+      expect(frames(File.read(file.path)).last).to include("state" => "done")
+      expect(file).not_to be_closed
+    end
+  end
+
+  it "supports write-only streams in force mode and silences them in auto mode" do
+    stream = Object.new
+    buffer = +""
+    stream.define_singleton_method(:write) { |text| buffer << text }
+    described_class.new(stream, mode: "auto", title: "RSpec").emit(state: "working", msg: "running")
+    expect(buffer).to be_empty
+    described_class.new(stream, mode: "force", title: "RSpec").emit(state: "done", msg: "complete")
+    expect(frames(buffer).last).to include("state" => "done")
+  end
+
+  it "disables output after a flush failure" do
+    output.define_singleton_method(:flush) { raise IOError, "flush failed" }
+    writer = described_class.new(output, mode: "force", title: "RSpec")
+    expect { writer.emit(state: "working", msg: "running") }.not_to raise_error
+    writer.emit(state: "done", msg: "complete")
+    expect(frames(output.string).map { |frame| frame.fetch("state") }).to eq(["working"])
     expect(output).not_to be_closed
   end
 

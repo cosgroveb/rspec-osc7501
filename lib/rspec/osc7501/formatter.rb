@@ -22,6 +22,7 @@ module RSpec
 
       # Starts suite progress from the example count in +notification+.
       def start(notification)
+        @inherited_exception = $!
         @started = true
         @total = notification.count
         @completed = @failed = @pending = 0
@@ -62,6 +63,7 @@ module RSpec
       # Final output bypasses throttling and omits progress.
       def dump_summary(notification)
         active_exception = $!
+        active_exception = nil if active_exception.equal?(@inherited_exception)
         @summarized = true
         state = final_state(notification, active_exception)
         outcome = { "done" => "Completed", "error" => "Failed", "idle" => "Stopped" }.fetch(state)
@@ -124,7 +126,7 @@ module RSpec
       def fail_fast_reached?(failure_count)
         threshold = RSpec.configuration.fail_fast
         threshold = 1 if threshold == true
-        threshold.is_a?(Integer) && threshold.positive? && failure_count >= threshold
+        threshold.is_a?(Integer) && failure_count >= threshold
       end
     end
   end
