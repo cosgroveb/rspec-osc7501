@@ -71,6 +71,14 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           cache-version: ${{ matrix.rspec_minor }}-${{ matrix.rspec_core }}
+      - name: Install actionlint
+        if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.4'
+        run: |
+          GOBIN="$RUNNER_TEMP/bin" go install github.com/rhysd/actionlint/cmd/actionlint@914e7df21a07ef503a81201c76d2b11c789d3fca # v1.7.12
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Check code quality
+        if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.4'
+        run: bundle exec rake quality
       - run: bundle exec rake spec package rdoc
       - run: gem install pkg/*.gem --local --install-dir tmp/gem-home --ignore-dependencies --no-document
       - run: |
