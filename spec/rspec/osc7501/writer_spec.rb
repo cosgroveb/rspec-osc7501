@@ -2,6 +2,7 @@
 
 require 'spec_helper'
 require 'tempfile'
+require_relative '../../support/sanitizer_inputs'
 
 RSpec.describe RSpec::OSC7501::Writer do
   let(:output) { StringIO.new }
@@ -114,6 +115,32 @@ RSpec.describe RSpec::OSC7501::Writer do
     it "replaces a character split by the input cap in #{title.encoding}" do
       described_class.new(output, mode: 'force', title: title).emit(state: 'done', msg: 'complete')
       expect(frames(output.string).fetch(0)).to include('title' => '�')
+    end
+  end
+
+  SanitizerInputs.cases.each do |description, title, message|
+    context "with generated #{description}" do
+      let(:frame) { frames(output.string).fetch(0) }
+
+      before do
+        described_class.new(output, mode: 'force', title: title).emit(state: 'working', msg: message, progress: 50)
+      end
+
+      it 'emits one complete bounded frame', :aggregate_failures do
+        expect(output.string).to match(%r{\A\e\]7501;app=rspec:title=[A-Za-z0-9+/=]*:state=working:
+                                         msg=[A-Za-z0-9+/=]*:progress=50\e\\\z}x)
+        expect(output.string.bytesize).to be <= 4096
+      end
+
+      it 'bounds both decoded fields', :aggregate_failures do
+        expect(frame.fetch('title').bytesize).to be <= 192
+        expect(frame.fetch('msg').bytesize).to be <= 2048
+      end
+
+      it 'produces valid UTF-8 without controls', :aggregate_failures do
+        expect(frame.values_at('title', 'msg')).to all(be_valid_encoding)
+        expect(frame.values_at('title', 'msg')).not_to include(match(/[\u0000-\u001F\u007F-\u009F]/))
+      end
     end
   end
 

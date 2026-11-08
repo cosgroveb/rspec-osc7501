@@ -31,4 +31,11 @@ end
 
 desc 'Run lint, dependency and workflow checks'
 task quality: %i[lint audit workflows]
-task default: %i[quality spec package rdoc]
+
+desc 'Run passing and failing suites against the installed gem'
+task smoke: :package do
+  specification = Gem::Specification.load('rspec-osc7501.gemspec')
+  ruby 'script/smoke.rb', "pkg/#{specification.full_name}.gem"
+end
+
+task default: %i[quality spec smoke rdoc]

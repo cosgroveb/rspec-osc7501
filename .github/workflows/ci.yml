@@ -79,14 +79,4 @@ jobs:
       - name: Check code quality
         if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.4'
         run: bundle exec rake quality
-      - run: bundle exec rake spec package rdoc
-      - run: gem install pkg/*.gem --local --install-dir tmp/gem-home --ignore-dependencies --no-document
-      - run: |
-          ruby -I"$(bundle show rspec-core)/lib" \
-               -I"$(bundle show rspec-support)/lib" \
-               -I"$(find tmp/gem-home/gems -maxdepth 1 -type d -name 'rspec-osc7501-*' -print -quit)/lib" \
-               -r rspec/osc7501 -e "
-            entrypoint = \$LOADED_FEATURES.find { |file| file.end_with?('/rspec/osc7501.rb') }
-            abort unless entrypoint && File.realpath(entrypoint).start_with?(File.realpath('tmp/gem-home') + '/')
-            abort unless defined?(RSpec::OSC7501::Formatter)
-          "
+      - run: bundle exec rake spec smoke rdoc
