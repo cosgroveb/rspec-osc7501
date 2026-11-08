@@ -64,6 +64,9 @@ that bypasses formatter callbacks can leave the last status in place. See
 - [Usage recipes](doc/usage.rdoc): persistent configuration and output routing.
 - [Behavior and reference](doc/behavior.rdoc): progress, terminal states and limits.
 - [Contributing](CONTRIBUTING.md): development and verification commands.
+- [Accessibility](ACCESSIBILITY.md): text output and reporting barriers.
+- [Security policy](SECURITY.md): supported releases and private reporting.
+- [Code of conduct](CODE_OF_CONDUCT.md): participation and conduct reports.
 - [Changelog](CHANGELOG.md).
 
 Licensed under [Apache License 2.0](LICENSE).

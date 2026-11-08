@@ -1,5 +1,8 @@
 # Contributing
 
+Follow the [code of conduct](CODE_OF_CONDUCT.md). Report vulnerabilities through
+the private channel in [SECURITY.md](SECURITY.md).
+
 Use MRI Ruby 3.3 or newer. Install actionlint 1.7.12 on your PATH, then run all checks:
 
 ```sh

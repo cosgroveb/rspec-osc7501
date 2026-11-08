@@ -11,6 +11,7 @@ end
 RDoc::Task.new do |task|
   task.main = 'README.md'
   task.rdoc_files.include('README.md', 'LICENSE', 'CHANGELOG.md', 'CONTRIBUTING.md', 'lib/**/*.rb', 'doc/**/*.rdoc')
+  task.rdoc_files.include('CODE_OF_CONDUCT.md', 'SECURITY.md', 'ACCESSIBILITY.md')
   task.rdoc_dir = 'tmp/rdoc'
 end
 

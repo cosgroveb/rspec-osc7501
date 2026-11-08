@@ -18,6 +18,7 @@ Gem::Specification.new do |spec|
     'changelog_uri' => 'https://github.com/cosgroveb/rspec-osc7501/blob/main/CHANGELOG.md'
   }
   spec.files = Dir.glob('lib/**/*.rb') + Dir.glob('doc/**/*.rdoc') + %w[README.md LICENSE CHANGELOG.md CONTRIBUTING.md]
+  spec.files += %w[CODE_OF_CONDUCT.md SECURITY.md ACCESSIBILITY.md]
   spec.files.select! { |file| File.file?(file) }
   spec.require_paths = ['lib']
 
