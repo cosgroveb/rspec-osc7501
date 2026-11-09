@@ -35,3 +35,19 @@ Preserve these contracts:
 Keep changes within the formatter. Worker aggregation, terminal queries, signal
 handlers, and process-wide exit hooks are out of scope. Do not commit built gems,
 generated HTML, lockfiles, or local bundle state. Preserve `LICENSE` verbatim.
+
+## PR writing requirements
+
+These requirements override general writing guidance unless Brian
+explicitly requests otherwise.
+
+- Read and apply `my-voice` with its core and PR-description references
+  before drafting or revising, then apply `stop-slop` to the final text.
+- Use ASCII only in titles and descriptions.
+- Write one short sentence per template section.
+- Include exact numbers only when they affect the reader's decision,
+  such as compatibility versions or operational limits.
+- Summarize verification by outcome rather than listing test counts
+  or command transcripts.
+- Before submitting, check the exact title and body against these
+  requirements and correct any violations.
