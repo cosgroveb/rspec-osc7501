@@ -18,6 +18,8 @@ bundle exec rake rdoc
 
 The gem goes in `pkg/`. RDoc goes in `tmp/rdoc/`.
 
+If a release fails, inspect the logs and rerun the same version to finish missing steps.
+
 Preserve these contracts:
 
 - Requiring the library registers the formatter without selecting it.

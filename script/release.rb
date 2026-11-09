@@ -157,18 +157,15 @@ class Release
     def await_gem(path)
       deadline = monotonic_time + 300
       while monotonic_time < deadline
-        return if gem_visible?(path)
+        begin
+          return if check_gem(path)
+        rescue DownloadNotVisible
+          # Wait for the uploaded file to become available.
+        end
 
-        delay = [5, deadline - monotonic_time].min
-        sleep(delay) if delay.positive?
+        sleep((deadline - monotonic_time).clamp(0, 5))
       end
       raise Error, 'RubyGems publication could not be verified within 300 seconds'
-    end
-
-    def gem_visible?(path)
-      check_gem(path)
-    rescue DownloadNotVisible
-      false
     end
 
     def monotonic_time
@@ -203,7 +200,7 @@ class Release
       end
       [response.code.to_i, response.body]
     end
-    private :candidate_spec, :verify_download, :await_gem, :gem_visible?, :monotonic_time,
+    private :candidate_spec, :verify_download, :await_gem, :monotonic_time,
             :gem_contents, :payload_contents, :http_get
   end
 
