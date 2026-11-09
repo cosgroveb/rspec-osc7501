@@ -10,9 +10,13 @@ income, education, or other status.
 
 Respect the project's purpose and other people's time. Discuss ideas without
 attacking people. Make room for different viewpoints and experiences. Give and
-accept constructive feedback. Take responsibility for your contributions and
-for repairing harm you cause. Account for differences in language, culture,
+accept constructive feedback. Account for differences in language, culture,
 and communication when interpreting what someone says.
+
+Take responsibility for what you submit, including code, reports, and comments
+produced with AI assistance. Review it before sharing, make sure you understand
+it, and respond to questions and corrections. Respect the time others spend
+reviewing your work. Take responsibility for repairing harm you cause.
 
 Do not:
 
