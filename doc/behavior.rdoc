@@ -44,8 +44,9 @@ The final frame includes RSpec's summary counts and duration, with no progress:
   exception ended the run. An empty suite with <tt>fail_if_no_examples</tt> also
   reports error.
 [<tt>idle</tt>]
-  Interrupt, a successful early SystemExit, or an otherwise unexplained early-stop
-  request ended the run.
+  An active Interrupt reports idle even with recorded failures. A zero-status
+  SystemExit reports idle only without failures or outside-example errors.
+  An otherwise unexplained early-stop request also reports idle.
 
 The formatter reads RSpec's private early-stop flag at summary time. A reached
 fail-fast threshold or outside-example error takes precedence over that flag.
