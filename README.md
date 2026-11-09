@@ -28,7 +28,7 @@ bundle exec rspec --require rspec/osc7501 \
   --format progress --format RSpec::OSC7501::Formatter
 ```
 
-Keep `--format progress` to retain RSpec’s dots, failures and summary. The OSC
+Keep `--format progress` to see RSpec’s dots, failures and summary. The OSC
 formatter reports completed examples and the final suite result through terminal
 status records. Requiring `rspec/osc7501` registers the formatter without selecting
 it.

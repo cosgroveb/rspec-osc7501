@@ -32,8 +32,8 @@ description and completed, failed, and pending counts. Progress divides complete
 results by the initial example count and stays within 0 to 100. Pending examples
 count as completed. Zero-example runs omit progress.
 
-Intermediate updates occur at most once per 100 ms. Initial and final updates
-bypass throttling. A dry run identifies itself in its messages.
+The formatter sends intermediate updates at most once per 100 ms and initial
+and final updates without throttling. A dry run identifies itself in its messages.
 
 The final frame includes RSpec's summary counts and duration, with no progress:
 

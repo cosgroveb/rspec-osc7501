@@ -50,5 +50,5 @@ is <tt>RSpec</tt>.
 
 == Disable status
 
-Set <tt>RSPEC_OSC7501=off</tt> to disable frames while retaining the formatter
+Set <tt>RSPEC_OSC7501=off</tt> to disable frames without changing the formatter
 configuration. See {Behavior}[rdoc-ref:doc/behavior.rdoc] for settings and limits.
