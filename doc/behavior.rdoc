@@ -11,12 +11,12 @@ that stream open and flushes each frame when the stream supports flushing.
 Settings apply when RSpec constructs the formatter.
 
 [<tt>RSPEC_OSC7501=auto</tt>]
-  Emit to a TTY. Streams without <tt>tty?</tt> remain silent.
+  Emit to a TTY unless <tt>TERM=dumb</tt>. Streams without <tt>tty?</tt> remain silent.
   This is the default, including an unset variable.
 [<tt>RSPEC_OSC7501=off</tt>]
   Emit no frames.
 [<tt>RSPEC_OSC7501=force</tt>]
-  Emit to the selected stream even if it is not a TTY.
+  Emit to the selected stream even if it is not a TTY or <tt>TERM=dumb</tt>.
 [<tt>RSPEC_OSC7501_TITLE</tt>]
   Set a stable suite title. Default: <tt>RSpec</tt>.
 

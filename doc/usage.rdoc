@@ -12,8 +12,8 @@ Add these options to your project's <tt>.rspec</tt>:
   --format RSpec::OSC7501::Formatter
 
 Run <tt>bundle exec rspec</tt>. RSpec prints ordinary progress and sends status
-frames to the formatter's TTY output. A terminal with OSC 7501 support can show
-the suite status.
+frames to the formatter's TTY output unless <tt>TERM=dumb</tt>. A terminal with
+OSC 7501 support can show the suite status.
 
 == Keep JSON separate
 

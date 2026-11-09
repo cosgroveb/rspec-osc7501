@@ -275,4 +275,46 @@ RSpec.describe RSpec::OSC7501, :aggregate_failures do
     expect(status.exitstatus).to eq(0)
     expect(frames(output)).to be_empty
   end
+
+  it 'preserves readable failures when color and status are disabled' do
+    output, _, status = run_suite(mixed_source, '-f', 'documentation', '--no-color', mode: 'off', tty: true)
+    expect(status.exitstatus).to eq(1)
+    expect(output).to include('passes', 'fails', 'waits', 'expected: 2', 'got: 1', '3 examples, 1 failure, 1 pending')
+    expect(output).not_to include("\e")
+  end
+
+  it 'reports status independently of text color' do
+    output, _, status = run_suite(mixed_source, '--no-color', mode: 'auto', tty: true, extra_env: { 'TERM' => 'xterm' })
+    expect(status.exitstatus).to eq(1)
+    expect(frames(output).last).to include('state' => 'error')
+    expect(output).not_to match(/\e\[[\d;]*m/)
+  end
+
+  it 'preserves forced text color when status is disabled' do
+    output, _, status = run_suite(mixed_source, '--force-color', mode: 'off', tty: true)
+    expect(status.exitstatus).to eq(1)
+    expect(output).to match(/\e\[[\d;]*m/)
+    expect(frames(output)).to be_empty
+  end
+
+  it 'suppresses automatic status on a dumb terminal' do
+    output, _, status = run_suite(mixed_source, mode: 'auto', tty: true, extra_env: { 'TERM' => 'dumb' })
+    expect(status.exitstatus).to eq(1)
+    expect(output).to include('3 examples, 1 failure, 1 pending')
+    expect(frames(output)).to be_empty
+  end
+
+  it 'allows forced status on a dumb terminal' do
+    output, _, status = run_suite(mixed_source, mode: 'force', tty: true, extra_env: { 'TERM' => 'dumb' })
+    expect(status.exitstatus).to eq(1)
+    expect(frames(output).last).to include('state' => 'error')
+  end
+
+  it 'keeps redirected status silent when text output uses a terminal' do
+    output, _, status, file = run_suite(mixed_source, mode: 'auto', tty: true, osc_out: 'result.json')
+    expect(status.exitstatus).to eq(1)
+    expect(output).to include('3 examples, 1 failure, 1 pending')
+    expect(frames(output)).to be_empty
+    expect(file).to eq('')
+  end
 end

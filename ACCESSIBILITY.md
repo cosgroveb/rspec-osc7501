@@ -15,14 +15,14 @@ RSPEC_OSC7501=off bundle exec rspec --format documentation --no-color
 `--no-color` disables RSpec's text colors. `RSPEC_OSC7501=off` disables this
 gem's status records, even when your RSpec configuration selects the formatter.
 
-By default, the formatter sends no status records to pipes or files.
-`RSPEC_OSC7501=force` overrides that default.
+By default, the formatter sends no status records to pipes, files, or terminals
+with `TERM=dumb`. `RSPEC_OSC7501=force` overrides those defaults.
 
 ## Environments and limits
 
 The gem supports MRI Ruby 3.3 or newer and RSpec Core 3.12 through 3.x.
 Terminal status requires an OSC 7501-capable terminal. The formatter checks
-for a TTY but does not detect OSC support or check `TERM`.
+for a TTY and honors `TERM=dumb` but does not detect OSC support.
 
 Your terminal controls how it displays or announces status. I have not tested
 the status display with screen readers. The command above gives you plain text,

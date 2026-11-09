@@ -44,6 +44,7 @@ class CLISuite
     {
       'BUNDLE_GEMFILE' => File.expand_path('../../Gemfile', __dir__),
       'RSPEC_OSC7501' => @settings.fetch(:mode, 'force'),
+      'TERM' => nil,
       'RUBYLIB' => File.expand_path('../../lib', __dir__)
     }.merge(@settings.fetch(:extra_env, {}))
   end
@@ -63,14 +64,14 @@ class CLISuite
   end
 
   def capture(directory)
-    if @settings[:tty]
-      output, status = PTYCapture.new(environment, command, directory).run
-      [output, '', status]
-    else
-      result = Open3.capture3(environment, *command, chdir: directory)
-      file = File.join(directory, 'result.json')
-      File.file?(file) ? [*result, File.read(file)] : result
-    end
+    result = if @settings[:tty]
+               output, status = PTYCapture.new(environment, command, directory).run
+               [output, '', status]
+             else
+               Open3.capture3(environment, *command, chdir: directory)
+             end
+    file = File.join(directory, 'result.json')
+    File.file?(file) ? [*result, File.read(file)] : result
   end
 end
 

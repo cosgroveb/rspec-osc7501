@@ -7,7 +7,7 @@ module RSpec
         raise ArgumentError, 'RSPEC_OSC7501 must be auto, off, or force' unless %w[auto off force].include?(mode)
 
         @output = output
-        @enabled = mode == 'force' || (mode == 'auto' && output.respond_to?(:tty?) && output.tty?)
+        @enabled = mode == 'force' || (mode == 'auto' && automatic_output?)
         @title = encode(title, 192) if @enabled
       rescue IOError, SystemCallError
         @enabled = false
@@ -25,6 +25,10 @@ module RSpec
       end
 
       private
+
+      def automatic_output?
+        ENV['TERM'] != 'dumb' && @output.respond_to?(:tty?) && @output.tty?
+      end
 
       def encode(text, byte_limit)
         input = text.to_s.byteslice(0, sanitization_byte_limit(byte_limit))

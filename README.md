@@ -48,7 +48,7 @@ with a `state=done` or `state=error` record.
 
 | Environment variable | Values | Default |
 | --- | --- | --- |
-| `RSPEC_OSC7501` | `auto` emits to a TTY, `off` disables output, `force` permits redirected output | `auto` |
+| `RSPEC_OSC7501` | `auto` emits to a TTY unless `TERM=dumb`, `off` disables output, `force` overrides both checks | `auto` |
 | `RSPEC_OSC7501_TITLE` | Title for the suite’s status records | `RSpec` |
 
 The formatter uses the output stream RSpec assigns, including `--out`. Default

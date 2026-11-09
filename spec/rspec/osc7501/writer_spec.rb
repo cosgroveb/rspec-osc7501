@@ -8,6 +8,11 @@ RSpec.describe RSpec::OSC7501::Writer do
   let(:output) { StringIO.new }
   let(:writer) { described_class.new(output, mode: 'force', title: 'RSpec') }
 
+  before do
+    allow(ENV).to receive(:[]).and_call_original
+    allow(ENV).to receive(:[]).with('TERM').and_return(nil)
+  end
+
   context 'when writing a complete root record' do
     before do
       described_class.new(output, mode: 'force', title: 'Suite').emit(state: 'working', msg: 'running', progress: 35)
