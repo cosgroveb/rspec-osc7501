@@ -49,6 +49,7 @@ class CLISuite
   end
 
   def command
+    # Interrupt and fail-fast fixtures depend on example order.
     [RbConfig.ruby, '-S', 'bundle', 'exec', 'rspec', '--order', 'defined', '-r', 'rspec/osc7501',
      *formatter_options, '-f', 'progress', *@options, 'sample_spec.rb']
   end

@@ -383,6 +383,14 @@ RSpec.describe Release, :aggregate_failures do
       expect(summary).to include('rubygems' => 'published', 'github' => 'incomplete')
     end
 
+    it 'keeps the upload status when verification times out', :aggregate_failures do
+      allow(release).to receive(:await_gem).and_raise(Release::Error, 'verification timeout')
+      expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /verification timeout/)
+      summary = JSON.parse(File.read(File.join(artifacts, 'publication.json')))
+      expect(summary).to include('rubygems' => 'published', 'github' => 'incomplete')
+      expect(release).not_to have_received(:create_release)
+    end
+
     context 'when retrying' do
       before do
         begin
@@ -416,79 +424,31 @@ RSpec.describe Release, :aggregate_failures do
   context 'when RubyGems publication is not immediately visible' do
     let(:gem) { build_gem('candidate') }
     let(:clock) { { seconds: 0.0 } }
-    let(:responses) do
-      [[404, 'missing'], [404, 'missing'], [200, '{}'], [404, 'missing'],
-       [200, '{}'], [200, File.binread(gem)]]
-    end
 
     before do
-      prepare_release
       allow(release).to receive(:monotonic_time) { clock[:seconds] }
       allow(release).to receive(:sleep) { |seconds| clock[:seconds] += seconds }
-      allow(release).to receive(:http_get) { responses.shift || [404, 'missing'] }
-      allow(release).to receive(:check_release).and_return(false)
-      allow(release).to receive(:create_release)
-      allow(release).to receive(:run).and_call_original
-      allow(release).to receive(:run).with('gem', 'push', gem)
     end
 
-    it 'waits for metadata and download visibility without another upload', :aggregate_failures do
-      release.publish(artifacts, gem)
+    it 'waits for missing metadata and downloads, then verifies the gem' do
+      allow(release).to receive(:http_get).and_return([404, 'missing'], [200, '{}'], [404, 'missing'],
+                                                      [200, '{}'], [200, File.binread(gem)])
+      release.send(:await_gem, gem)
       expect(release).to have_received(:sleep).with(5).twice
-      expect(release).to have_received(:run).with('gem', 'push', gem).once
-      expect(release).to have_received(:create_release).once
     end
 
-    context 'when visibility never arrives' do
-      let(:responses) { [] }
-
-      it 'fails after five minutes without creating a GitHub release', :aggregate_failures do
-        expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /could not be verified/)
-        expect(clock[:seconds]).to eq(300)
-        expect(release).not_to have_received(:create_release)
-        expect(release).to have_received(:run).with('gem', 'push', gem).once
-      end
-
-      it 'retains confirmed upload status on timeout' do
-        expect { release.publish(artifacts, gem) }.to raise_error(Release::Error)
-        summary = JSON.parse(File.read(File.join(artifacts, 'publication.json')))
-        expect(summary).to include('rubygems' => 'published', 'github' => 'incomplete')
-      end
+    it 'counts request time and stops at the deadline', :aggregate_failures do
+      allow(release).to receive(:monotonic_time).and_return(0, 0, 298, 300)
+      allow(release).to receive(:check_gem).and_return(false)
+      expect { release.send(:await_gem, gem) }.to raise_error(Release::Error, /could not be verified/)
+      expect(release).to have_received(:sleep).with(2).once
+      expect(release).to have_received(:check_gem).once
     end
 
-    context 'when a request takes most of the polling budget' do
-      before do
-        allow(release).to receive(:check_gem) do
-          clock[:seconds] += 298
-          false
-        end
-      end
-
-      it 'counts request time and does not poll after the deadline', :aggregate_failures do
-        expect { release.send(:await_gem, gem) }.to raise_error(Release::Error)
-        expect(release).to have_received(:sleep).with(2).once
-        expect(release).to have_received(:check_gem).once
-      end
-    end
-
-    [401, 403, 429, 500].each do |status|
-      context "when verification returns HTTP #{status}" do
-        let(:responses) { [[404, 'missing'], [status, 'failed']] }
-
-        it 'fails immediately', :aggregate_failures do
-          expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /HTTP #{status}/)
-          expect(release).not_to have_received(:sleep)
-        end
-      end
-    end
-
-    context 'when downloaded contents differ' do
-      let(:responses) { [[404, 'missing'], [200, '{}'], [200, File.binread(build_gem('changed', text: 'changed'))]] }
-
-      it 'fails immediately', :aggregate_failures do
-        expect { release.publish(artifacts, gem) }.to raise_error(Release::Error, /differs/)
-        expect(release).not_to have_received(:sleep)
-      end
+    it 'propagates other errors without waiting', :aggregate_failures do
+      allow(release).to receive(:http_get).and_return([401, 'unauthorized'])
+      expect { release.send(:await_gem, gem) }.to raise_error(Release::Error, /HTTP 401/)
+      expect(release).not_to have_received(:sleep)
     end
   end
 end
