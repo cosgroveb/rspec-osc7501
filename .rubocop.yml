@@ -3,3 +3,25 @@ plugins:
 
 AllCops:
   TargetRubyVersion: 3.3
+
+# These files also run on Ruby 2.1, below RuboCop's supported target versions.
+Style/NumericPredicate:
+  Exclude:
+    - lib/rspec/osc7501/formatter.rb
+
+Style/UnpackFirst:
+  Exclude:
+    - script/smoke.rb
+    - spec/spec_helper.rb
+
+Style/SafeNavigation:
+  Exclude:
+    - spec/support/cli_suite.rb
+
+Gemspec/RequiredRubyVersion:
+  Exclude:
+    - rspec-osc7501.gemspec
+
+Naming/FileName:
+  Exclude:
+    - Gemfile.compat

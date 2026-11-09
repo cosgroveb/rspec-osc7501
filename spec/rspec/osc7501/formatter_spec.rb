@@ -6,9 +6,11 @@ RSpec.describe RSpec::OSC7501::Formatter do
   around do |example|
     original = ENV['RSPEC_OSC7501']
     ENV['RSPEC_OSC7501'] = 'force'
-    example.run
-  ensure
-    original.nil? ? ENV.delete('RSPEC_OSC7501') : ENV['RSPEC_OSC7501'] = original
+    begin
+      example.run
+    ensure
+      original.nil? ? ENV.delete('RSPEC_OSC7501') : ENV['RSPEC_OSC7501'] = original
+    end
   end
 
   let(:output) { StringIO.new }

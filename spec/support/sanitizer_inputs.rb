@@ -23,7 +23,7 @@ module SanitizerInputs
   def self.text(random, encoding, size)
     tokens = CHARACTERS.map { |char| char.encode(encoding, undef: :replace).b }
     tokens << "\xFF\x80".b
-    bytes = +''.b
+    bytes = String.new.b
     bytes << tokens.sample(random: random) while bytes.bytesize < size
     bytes.byteslice(0, size).force_encoding(encoding)
   end

@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.email = ['cosgroveb@users.noreply.github.com']
   spec.homepage = 'https://github.com/cosgroveb/rspec-osc7501'
   spec.license = 'Apache-2.0'
-  spec.required_ruby_version = '>= 3.3'
+  spec.required_ruby_version = '>= 2.1'
   spec.metadata = {
     'source_code_uri' => 'https://github.com/cosgroveb/rspec-osc7501',
     'bug_tracker_uri' => 'https://github.com/cosgroveb/rspec-osc7501/issues',
@@ -22,5 +22,5 @@ Gem::Specification.new do |spec|
   spec.files.select! { |file| File.file?(file) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'rspec-core', '>= 3.12', '< 4'
+  spec.add_dependency 'rspec-core', '>= 3.6', '< 4'
 end

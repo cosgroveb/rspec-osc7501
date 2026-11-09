@@ -13,7 +13,7 @@ class CLISuite
   end
 
   def self.embedded_source(exception, body)
-    <<~RUBY
+    <<-RUBY
       require "rspec/osc7501"
       require "stringio"
       RSpec.describe("embedded") { it("runs") { #{body} } }
@@ -42,10 +42,10 @@ class CLISuite
 
   def environment
     {
-      'BUNDLE_GEMFILE' => File.expand_path('../../Gemfile', __dir__),
+      'BUNDLE_GEMFILE' => File.expand_path(ENV.fetch('BUNDLE_GEMFILE') { File.expand_path('../../Gemfile', __dir__) }),
       'RSPEC_OSC7501' => @settings.fetch(:mode, 'force'),
       'TERM' => nil,
-      'RUBYLIB' => File.expand_path('../../lib', __dir__)
+      'RUBYLIB' => [File.expand_path('../../lib', __dir__), ENV['RUBYLIB']].compact.join(File::PATH_SEPARATOR)
     }.merge(@settings.fetch(:extra_env, {}))
   end
 
@@ -81,7 +81,7 @@ class PTYCapture
     @environment = environment
     @command = command
     @directory = directory
-    @output = +''
+    @output = String.new
     @status = nil
   end
 
@@ -133,7 +133,7 @@ class PTYCapture
       Process.kill('KILL', @pid)
       Process.waitpid(@pid)
     end
-    @master&.close
-    @slave&.close
+    @master.close if @master
+    @slave.close if @slave
   end
 end

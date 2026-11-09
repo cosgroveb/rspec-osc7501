@@ -46,8 +46,39 @@ jobs:
             ruby: "3.4"
             rspec_minor: "3.13"
             rspec_core: "~> 3.13.0"
+          - os: ubuntu-22.04
+            ruby: "2.1"
+            rspec_minor: "3.6"
+            rspec_core: "3.6.0"
+            gemfile: Gemfile.compat
+            bundler: "1.17.3"
+          - os: ubuntu-22.04
+            ruby: "2.1"
+            rspec_minor: "3.13"
+            rspec_core: "~> 3.13.0"
+            gemfile: Gemfile.compat
+            bundler: "1.17.3"
+          - os: ubuntu-22.04
+            ruby: "2.7"
+            rspec_minor: "3.9"
+            rspec_core: "~> 3.9.0"
+            gemfile: Gemfile.compat
+            bundler: "2.4.22"
+          - os: ubuntu-22.04
+            ruby: "3.1"
+            rspec_minor: "3.12"
+            rspec_core: "3.12.0"
+            gemfile: Gemfile.compat
+            bundler: "2.4.22"
+          - os: ubuntu-22.04
+            ruby: "3.4"
+            rspec_minor: "3.6"
+            rspec_core: "3.6.0"
+            gemfile: Gemfile.compat
+            bundler: "2.6.9"
     runs-on: ${{ matrix.os }}
     env:
+      BUNDLE_GEMFILE: ${{ matrix.gemfile || 'Gemfile' }}
       RSPEC_MINOR: ${{ matrix.rspec_minor }}
       RSPEC_CORE_VERSION: ${{ matrix.rspec_core }}
     steps:
@@ -62,15 +93,17 @@ jobs:
       - if: inputs.release-artifact != ''
         uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
         with:
-          ruby-version: ${{ matrix.ruby }}
+          ruby-version: "3.4"
+          bundler: none
           bundler-cache: false
       - if: inputs.release-artifact != ''
         run: ruby script/release.rb restore "$RUNNER_TEMP/release"
       - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          bundler: ${{ matrix.bundler || 'default' }}
           bundler-cache: true
-          cache-version: ${{ matrix.rspec_minor }}-${{ matrix.rspec_core }}
+          cache-version: ${{ matrix.ruby }}-${{ matrix.gemfile || 'Gemfile' }}-${{ matrix.rspec_minor }}-${{ matrix.rspec_core }}
       - name: Install actionlint
         if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.4'
         run: |
@@ -79,4 +112,11 @@ jobs:
       - name: Check code quality
         if: matrix.os == 'ubuntu-latest' && matrix.ruby == '3.4'
         run: bundle exec rake quality
-      - run: bundle exec rake spec smoke rdoc
+      - if: matrix.gemfile != 'Gemfile.compat'
+        run: bundle exec rake spec smoke rdoc
+      - name: Check runtime compatibility
+        if: matrix.gemfile == 'Gemfile.compat'
+        run: |
+          bundle exec rspec spec/rspec
+          bundle exec gem build rspec-osc7501.gemspec
+          bundle exec ruby script/smoke.rb rspec-osc7501-*.gem
