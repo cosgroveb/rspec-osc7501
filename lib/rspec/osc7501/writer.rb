@@ -17,7 +17,7 @@ module RSpec
         return unless @enabled
 
         fields = ['app=rspec', "title=#{@title}", "state=#{state}", "msg=#{encode(msg, 2048)}"]
-        fields << "progress=#{progress.to_i.clamp(0, 100)}" if state == 'working' && !progress.nil?
+        fields << "progress=#{[[progress.to_i, 0].max, 100].min}" if state == 'working' && !progress.nil?
         @output.write("\e]7501;#{fields.join(':')}\e\\")
         @output.flush if @output.respond_to?(:flush)
       rescue IOError, SystemCallError

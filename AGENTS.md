@@ -1,7 +1,7 @@
 # Project guide
 
 `rspec-osc7501` is an opt-in RSpec formatter for OSC 7501 terminal status.
-Target MRI Ruby >= 3.3 and `rspec-core` >= 3.12, < 4.
+Target MRI Ruby >= 2.1 and `rspec-core` >= 3.6, < 4.
 
 - `lib/rspec/osc7501.rb` loads and registers the formatter.
 - `lib/rspec/osc7501/` holds implementation and version.

@@ -17,7 +17,7 @@ end
 
 desc 'Check Ruby and RSpec style'
 task :lint do
-  sh 'rubocop', 'lib', 'script', 'spec', 'Gemfile', 'Rakefile', 'rspec-osc7501.gemspec'
+  sh 'rubocop', 'lib', 'script', 'spec', 'Gemfile', 'Gemfile.compat', 'Rakefile', 'rspec-osc7501.gemspec'
 end
 
 desc 'Check resolved dependencies for known vulnerabilities'

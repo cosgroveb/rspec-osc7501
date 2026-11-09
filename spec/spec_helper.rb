@@ -8,10 +8,10 @@ module FrameHelpers
 
   def frames(output)
     output.scan(FRAME).map do |(body)|
-      body.split(':').to_h do |field|
+      body.split(':').map do |field|
         key, value = field.split('=', 2)
-        [key, %w[title msg].include?(key) ? value.unpack1('m0').force_encoding('UTF-8') : value]
-      end
+        [key, %w[title msg].include?(key) ? value.unpack('m0').first.force_encoding('UTF-8') : value]
+      end.to_h
     end
   end
 end

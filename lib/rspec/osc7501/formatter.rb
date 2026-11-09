@@ -89,8 +89,8 @@ module RSpec
         return if now - @last_update < 0.1
 
         message = "#{@completed}/#{@total} examples"
-        message += ", #{@failed} failures" if @failed.positive?
-        message += ", #{@pending} pending" if @pending.positive?
+        message += ", #{@failed} failures" if @failed > 0
+        message += ", #{@pending} pending" if @pending > 0
         message += ": #{@current}" if @current
         @writer.emit(state: 'working', msg: message, progress: progress)
         @last_update = now
@@ -99,20 +99,20 @@ module RSpec
       def progress
         return if @total.zero?
 
-        ((@completed * 100) / @total).clamp(0, 100)
+        [[(@completed * 100) / @total, 0].max, 100].min
       end
 
       def final_state(summary, active_exception)
         return 'idle' if active_exception.is_a?(Interrupt)
         return exit_state(summary, active_exception) if active_exception.is_a?(SystemExit)
-        return 'error' if active_exception || summary.errors_outside_of_examples_count.positive?
+        return 'error' if active_exception || summary.errors_outside_of_examples_count > 0
         return stopped_state(summary) if early_stop?
 
         unsuccessful_summary?(summary) ? 'error' : 'done'
       end
 
       def exit_state(summary, exception)
-        failed = summary.failure_count.positive? || summary.errors_outside_of_examples_count.positive?
+        failed = summary.failure_count > 0 || summary.errors_outside_of_examples_count > 0
         exception.status.zero? && !failed ? 'idle' : 'error'
       end
 
@@ -121,10 +121,10 @@ module RSpec
       end
 
       def unsuccessful_summary?(summary)
-        summary.failure_count.positive? || (summary.example_count.zero? && RSpec.configuration.fail_if_no_examples)
+        summary.failure_count > 0 || (summary.example_count.zero? && RSpec.configuration.fail_if_no_examples)
       end
 
-      # RSpec has no public early-stop event in 3.12 or 3.13.
+      # RSpec has no public early-stop event in supported 3.x versions.
       def early_stop?
         RSpec.world.wants_to_quit
       end

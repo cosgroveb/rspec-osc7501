@@ -48,7 +48,7 @@ RSpec.describe RSpec::OSC7501::Writer do
   end
 
   context 'with a write-only stream' do
-    let(:buffer) { +'' }
+    let(:buffer) { String.new }
     let(:output) { Object.new }
 
     before do
@@ -147,6 +147,11 @@ RSpec.describe RSpec::OSC7501::Writer do
         expect(frame.values_at('title', 'msg')).not_to include(match(/[\u0000-\u001F\u007F-\u009F]/))
       end
     end
+  end
+
+  it 'clamps negative progress to zero' do
+    writer.emit(state: 'working', msg: 'running', progress: -1)
+    expect(frames(output.string).last.fetch('progress')).to eq('0')
   end
 
   it 'omits progress from terminal states' do

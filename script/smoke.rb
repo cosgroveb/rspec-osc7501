@@ -7,7 +7,7 @@ require 'tmpdir'
 
 # Runs the packaged formatter without the checkout or Bundler in the child.
 class InstalledSmoke
-  RUNNER = <<~'RUBY'
+  RUNNER = <<-'RUBY'
     require 'rspec/osc7501'
     expected, checkout = ARGV
     entrypoint = $LOADED_FEATURES.find { |path| path.end_with?('/rspec/osc7501.rb') }
@@ -25,7 +25,9 @@ class InstalledSmoke
 
   def run
     Dir.mktmpdir('rspec-osc7501-installed-') do |directory|
-      installed = Gem::Installer.at(@package, install_dir: directory, ignore_dependencies: true).install
+      constructor = Gem::Installer.respond_to?(:at) ? :at : :new
+      installed = Gem::Installer.public_send(constructor, @package, install_dir: directory,
+                                                                    ignore_dependencies: true).install
       @library = File.join(installed.full_gem_path, 'lib')
       check(directory, 0, 'done')
       check(directory, 1, 'error')
@@ -49,7 +51,8 @@ class InstalledSmoke
     environment = { 'RUBYOPT' => nil, 'RUBYLIB' => nil, 'GEM_HOME' => directory, 'GEM_PATH' => directory,
                     'HOME' => directory, 'SPEC_OPTS' => nil, 'RSPEC_OSC7501' => 'force' }
     paths = [@library, *@dependencies].flat_map { |path| ['-I', path] }
-    Bundler.with_unbundled_env do
+    clean_env = Bundler.respond_to?(:with_unbundled_env) ? :with_unbundled_env : :with_clean_env
+    Bundler.public_send(clean_env) do
       Open3.capture3(environment, Gem.ruby, *paths, '-e', RUNNER,
                      File.realpath(File.join(@library, 'rspec/osc7501.rb')), @checkout, chdir: directory)
     end
@@ -57,7 +60,7 @@ class InstalledSmoke
 
   def verify_final(output, state, failures)
     records = output.scan(/\e\]7501;([^\e]*)\e\\/).flatten
-    final = records.last.to_s.split(':').to_h { |field| field.split('=', 2) }
+    final = records.last.to_s.split(':').map { |field| field.split('=', 2) }.to_h
     raise "Wrong final OSC record:\n#{output}" unless final['app'] == 'rspec' && final['state'] == state
     raise "Unexpected final progress:\n#{output}" if final.key?('progress')
 
@@ -65,7 +68,7 @@ class InstalledSmoke
   end
 
   def verify_summary(final, failures)
-    message = final.fetch('msg', '').unpack1('m0')
+    message = final.fetch('msg', '').unpack('m0').first
     prefix = failures.zero? ? 'Completed' : 'Failed'
     return if message.start_with?("#{prefix}: 1 example, #{failures} failure")
 

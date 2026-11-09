@@ -15,7 +15,7 @@ RSpec.describe RSpec::OSC7501, :aggregate_failures do
   end
 
   let(:mixed_source) do
-    <<~RUBY
+    <<-RUBY
       RSpec.describe("mix") do
         it("passes") { expect(1).to eq(1) }
         it("fails") { expect(1).to eq(2) }
