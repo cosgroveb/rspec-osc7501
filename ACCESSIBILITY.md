@@ -1,7 +1,7 @@
 # Accessibility
 
-You should be able to read test results without relying on terminal status
-indicators. Use rspec-osc7501 alongside an RSpec text formatter so failures and
+Read test results without relying on terminal status indicators. Use
+rspec-osc7501 alongside an RSpec text formatter so failures and
 the suite summary remain available as text.
 
 ## Plain text output

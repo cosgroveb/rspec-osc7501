@@ -2,7 +2,7 @@
 
 Report RSpec suite activity, progress and results to terminals that support
 [OSC 7501](https://www.superlogical.com/rex/docs/build/program-status).
-Use the formatter alongside RSpec’s progress or documentation formatter.
+Use the formatter alongside RSpec's progress or documentation formatter.
 
 Requires MRI Ruby 3.3 or newer and `rspec-core >= 3.12, < 4`.
 
@@ -28,7 +28,7 @@ bundle exec rspec --require rspec/osc7501 \
   --format progress --format RSpec::OSC7501::Formatter
 ```
 
-Keep `--format progress` to see RSpec’s dots, failures and summary. The OSC
+Keep `--format progress` to see RSpec's dots, failures and summary. The OSC
 formatter reports completed examples and the final suite result through terminal
 status records. Requiring `rspec/osc7501` registers the formatter without selecting
 it.
@@ -49,7 +49,7 @@ with a `state=done` or `state=error` record.
 | Environment variable | Values | Default |
 | --- | --- | --- |
 | `RSPEC_OSC7501` | `auto` emits to a TTY unless `TERM=dumb`, `off` disables output, `force` overrides both checks | `auto` |
-| `RSPEC_OSC7501_TITLE` | Title for the suite’s status records | `RSpec` |
+| `RSPEC_OSC7501_TITLE` | Title for the suite's status records | `RSpec` |
 
 The formatter uses the output stream RSpec assigns, including `--out`. Default
 mode emits nothing to redirected streams. Use one reporting RSpec process per
