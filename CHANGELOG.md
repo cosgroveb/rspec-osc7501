@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.3 - 2026-11-10
+
+- Support Ruby 2.1 and RSpec 3.6 ([5afb73d](https://github.com/cosgroveb/rspec-osc7501/commit/5afb73d1ededebcafbcb81096e6bb024f791a46c))
+- Require concise PR descriptions ([feea21a](https://github.com/cosgroveb/rspec-osc7501/commit/feea21a985b7c59e1e5a1ee34b546ba58f049c69))
+
 ## 0.1.2 - 2026-11-09
 
 - Bump actions/checkout from 4.4.0 to 7.0.1 ([c19db3a](https://github.com/cosgroveb/rspec-osc7501/commit/c19db3a1a8c5bb41ab4db2eb0bc8740ce0a66bd0))
