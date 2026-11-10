@@ -1,0 +1,3 @@
+--require rspec/osc7501
+--format progress
+--format RSpec::OSC7501::Formatter
