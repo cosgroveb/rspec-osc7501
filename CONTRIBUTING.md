@@ -29,7 +29,7 @@ defined order because their interrupt and fail-fast cases depend on sequence.
 
 Keep runtime dependencies limited to `rspec-core`. Cover formatter behavior with
 specs and lifecycle changes with real RSpec subprocesses. Check RSpec 3.6 through
-3.13 when changing early-stop detection.
+3.13 and the RSpec 4 preview when changing early-stop detection.
 
 Build the gem and documentation:
 
@@ -67,11 +67,12 @@ CI checks the oldest Ruby against both RSpec endpoints, the oldest RSpec on mode
 Ruby, and the Debian Bullseye and Bookworm version families. These jobs run the
 formatter suite and installed-gem smoke checks. Modern jobs also test release
 automation, lint and documentation.
+CI also checks RSpec 4.0.0.beta1 on Ruby 4.0.
 
 Compatibility checks use available patch releases within each Ruby series.
 Supporting an older runtime does not extend its upstream security maintenance.
-Unset `BUNDLE_GEMFILE`, `RSPEC_MINOR` and `RSPEC_CORE_VERSION` before returning to
-the modern development bundle.
+Unset `BUNDLE_GEMFILE`, `RSPEC_MINOR`, `RSPEC_CORE_VERSION` and `RSPEC_VERSION`
+before returning to the modern development bundle.
 
 Update usage or behavior documentation for user-visible changes. Write commit
 subjects that describe the change, because release notes use those subjects.
