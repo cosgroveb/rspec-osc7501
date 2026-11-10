@@ -8,8 +8,11 @@ require 'rbconfig'
 # Executes an isolated RSpec CLI suite, optionally through a real terminal.
 class CLISuite
   def self.run_embedded(exception, body)
-    Open3.capture3({ 'RSPEC_OSC7501' => 'force' }, RbConfig.ruby,
-                   '-I', File.expand_path('../../lib', __dir__), '-e', embedded_source(exception, body))
+    Dir.mktmpdir('rspec-osc7501-embedded-') do |directory|
+      Open3.capture3({ 'RSPEC_OSC7501' => 'force' }, RbConfig.ruby,
+                     '-I', File.expand_path('../../lib', __dir__), '-e', embedded_source(exception, body),
+                     chdir: directory)
+    end
   end
 
   def self.embedded_source(exception, body)
