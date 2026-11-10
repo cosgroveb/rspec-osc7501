@@ -90,7 +90,8 @@ instance. Other exceptions propagate.
 
 == Compatibility
 
-The gem requires Ruby >= 2.1 and <tt>rspec-core</tt> >= 3.6, < 4. MRI is the
-supported Ruby engine. Other engines and RSpec 4 are unverified. Runtime
+The gem requires Ruby >= 2.1 and <tt>rspec-core</tt> >= 3.6. MRI is the
+supported Ruby engine. CI also checks RSpec 4.0.0.beta1 on Ruby 4.0.
+Other engines are unverified. Runtime
 compatibility does not extend upstream security maintenance for older Ruby versions.
 Development tools use modern Ruby, as described in CONTRIBUTING.md.

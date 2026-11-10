@@ -42,6 +42,11 @@ jobs:
             ruby: "4.0"
             rspec_minor: "3.13"
             rspec_core: "~> 3.13.0"
+          - os: ubuntu-latest
+            ruby: "4.0"
+            rspec_minor: "4.0"
+            rspec_core: "4.0.0.beta1"
+            rspec_version: "4.0.0.beta1"
           - os: macos-latest
             ruby: "3.4"
             rspec_minor: "3.13"
@@ -81,6 +86,7 @@ jobs:
       BUNDLE_GEMFILE: ${{ matrix.gemfile || 'Gemfile' }}
       RSPEC_MINOR: ${{ matrix.rspec_minor }}
       RSPEC_CORE_VERSION: ${{ matrix.rspec_core }}
+      RSPEC_VERSION: ${{ matrix.rspec_version || format('~> {0}.0', matrix.rspec_minor) }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
