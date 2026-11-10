@@ -20,7 +20,7 @@ with `TERM=dumb`. `RSPEC_OSC7501=force` overrides those defaults.
 
 ## Environments and limits
 
-The gem supports MRI Ruby 3.3 or newer and RSpec Core 3.12 through 3.x.
+The gem requires MRI Ruby 2.1 or newer and RSpec Core 3.6 or newer.
 Terminal status requires an OSC 7501-capable terminal. The formatter checks
 for a TTY and honors `TERM=dumb` but does not detect OSC support.
 

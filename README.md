@@ -4,7 +4,7 @@ Report RSpec suite activity, progress and results to terminals that support
 [OSC 7501](https://www.superlogical.com/rex/docs/build/program-status).
 Use the formatter alongside RSpec's progress or documentation formatter.
 
-Requires MRI Ruby 2.1 or newer and `rspec-core >= 3.6, < 4`.
+Requires MRI Ruby 2.1 or newer and `rspec-core >= 3.6`.
 
 ## Install
 

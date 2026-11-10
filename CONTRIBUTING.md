@@ -46,7 +46,7 @@ passing and failing suites without loading the checkout's library.
 
 ## Runtime compatibility
 
-The gem supports MRI Ruby 2.1 or newer and RSpec Core 3.6 through 3.x.
+The gem requires MRI Ruby 2.1 or newer and RSpec Core 3.6 or newer.
 Use `Gemfile.compat` to test the formatter without modern lint, release or RDoc
 dependencies. On Ruby 2.1, install Bundler 1.17.3 first. Set the RSpec version
 before resolving dependencies:

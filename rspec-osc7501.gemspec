@@ -22,5 +22,5 @@ Gem::Specification.new do |spec|
   spec.files.select! { |file| File.file?(file) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'rspec-core', '>= 3.6', '< 4'
+  spec.add_dependency 'rspec-core', '>= 3.6'
 end
