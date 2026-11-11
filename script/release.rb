@@ -220,16 +220,20 @@ class Release
     end
 
     def matching_release?(release, tag, notes_file)
-      expected = { 'tag_name' => tag, 'draft' => false, 'prerelease' => false,
-                   'target_commitish' => git('rev-parse', "#{tag}^{commit}") }
+      expected = { 'tag_name' => tag, 'draft' => false, 'prerelease' => false }
       expected.all? { |key, value| release.fetch(key) == value } &&
+        remote_tag(tag) == git('rev-parse', "#{tag}^{commit}") &&
         release.fetch('body').to_s.strip == File.read(notes_file).strip
     end
 
     def create_release(version, tag, notes_file)
       validate_version(version)
+      unless remote_tag(tag) == git('rev-parse', "#{tag}^{commit}")
+        raise Error, 'Remote release tag differs from local source'
+      end
+
       run('gh', 'release', 'create', tag, '--repo', REPOSITORY, '--verify-tag', '--title', "v#{version}",
-          '--target', git('rev-parse', "#{tag}^{commit}"), '--notes-file', File.expand_path(notes_file))
+          '--notes-file', File.expand_path(notes_file))
     end
 
     def publish(directory, gem_path)
@@ -405,7 +409,7 @@ class Release
 
   def run(*args)
     output, error, success = capture(*args)
-    raise Error, "#{args.first} failed: #{error.strip}" unless success
+    raise Error, "#{args.first} failed: #{[output, error].reject(&:empty?).join("\n").strip}" unless success
 
     output
   end

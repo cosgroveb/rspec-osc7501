@@ -16,7 +16,7 @@ module RSpec
       # The optional +clock+ callable returns monotonic seconds for throttling.
       def initialize(output, clock: -> { Process.clock_gettime(Process::CLOCK_MONOTONIC) })
         @writer = Writer.new(output, mode: ENV.fetch('RSPEC_OSC7501', 'auto'),
-                                     title: ENV.fetch('RSPEC_OSC7501_TITLE', 'RSpec'))
+                                     title: ENV.fetch('RSPEC_OSC7501_TITLE', 'RSpec'), id: ENV['RSPEC_OSC7501_ID'])
         @clock = clock
         @started = false
         @summarized = false

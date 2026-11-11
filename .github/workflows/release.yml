@@ -82,7 +82,9 @@ jobs:
           ruby-version: "3.4"
           bundler-cache: false
       - name: Restore tested source
-        run: ruby script/release.rb restore "$RUNNER_TEMP/release"
+        run: |
+          cp script/release.rb "$RUNNER_TEMP/release-runner.rb"
+          ruby "$RUNNER_TEMP/release-runner.rb" restore "$RUNNER_TEMP/release"
       - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
         with:
           ruby-version: "3.4"
@@ -92,7 +94,7 @@ jobs:
       - name: Check existing gem
         id: gem
         run: |
-          ruby script/release.rb check-gem pkg/*.gem > "$RUNNER_TEMP/gem-status.json"
+          ruby "$RUNNER_TEMP/release-runner.rb" check-gem pkg/*.gem > "$RUNNER_TEMP/gem-status.json"
           ruby -rjson -e '
             status = JSON.parse(File.read(File.join(ENV.fetch("RUNNER_TEMP"), "gem-status.json")))
             File.open(ENV.fetch("GITHUB_OUTPUT"), "a") { |output| output.puts "published=#{status.fetch("published")}" }
@@ -104,7 +106,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh auth setup-git
-          ruby script/release.rb publish "$RUNNER_TEMP/release" pkg/*.gem
+          ruby "$RUNNER_TEMP/release-runner.rb" publish "$RUNNER_TEMP/release" pkg/*.gem
       - name: Preserve release artifacts
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4

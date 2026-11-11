@@ -42,6 +42,16 @@ RSpec.describe RSpec::OSC7501, :aggregate_failures do
     end
   end
 
+  ['', 'bad:id', 'a' * 33].each do |id|
+    it "silences explicit formatter output for invalid child ID #{id.inspect}" do
+      output, _, status = run_suite('RSpec.describe("bad") { it { fail "bad" } }',
+                                    extra_env: { 'RSPEC_OSC7501_ID' => id })
+      expect(status.exitstatus).to eq(1)
+      expect(output).to include('1 example, 1 failure')
+      expect(frames(output)).to be_empty
+    end
+  end
+
   it 'reports failures and pending examples without stopping at the first failure' do
     output, _, status = run_suite(mixed_source)
     expect(status.exitstatus).to eq(1)
