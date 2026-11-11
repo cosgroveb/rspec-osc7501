@@ -2,7 +2,11 @@
 
 ## Unreleased
 
-- Support named child records and additive managed formatter activation.
+## 0.1.4 - 2026-11-11
+
+- Allow newer RSpec versions and test RSpec 4 ([a3f8f5d](https://github.com/cosgroveb/rspec-osc7501/commit/a3f8f5decaf8d27328dd9dcc14536b8b8f4a35cb))
+- Configure local Ruby and OSC spec reporting ([495f6be](https://github.com/cosgroveb/rspec-osc7501/commit/495f6be57799835da5ceddddd23e44a1cee4ca9d))
+- Add managed RSpec child reporting \(\#13\) ([7e6d4c1](https://github.com/cosgroveb/rspec-osc7501/commit/7e6d4c15d8e210da0ff9cf90ecf05248d1863b5e))
 
 ## 0.1.3 - 2026-11-10
 
