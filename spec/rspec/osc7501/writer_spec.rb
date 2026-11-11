@@ -33,6 +33,23 @@ RSpec.describe RSpec::OSC7501::Writer do
     end
   end
 
+  it 'writes a bounded nested record without changing text limits', :aggregate_failures do
+    id = ['a' * 32, 'b' * 32, 'c' * 32, 'd' * 29].join('/')
+    described_class.new(output, mode: 'force', title: 't' * 300, id: id)
+                   .emit(state: 'working', msg: 'm' * 3000, progress: 50)
+    expect(frames(output.string).first).to include('id' => id, 'title' => 't' * 192, 'msg' => 'm' * 2048)
+    expect(output.string.bytesize).to be <= 4096
+  end
+
+  ['', '/a', 'a/', 'a//b', 'a:b', 'a b', '界', 'a' * 33,
+   ['a'] * 9 * '/', ['a' * 32] * 4 * '/'].each do |id|
+    it "silences invalid context #{id.inspect}", :aggregate_failures do
+      described_class.new(output, mode: 'force', title: 'RSpec', id: id).emit(state: 'done', msg: 'ok')
+      expect(output.string).to eq('')
+      expect(described_class.valid_id?(id)).to be(false)
+    end
+  end
+
   context 'with a buffered stream' do
     let(:output) { Tempfile.new('osc7501') }
 

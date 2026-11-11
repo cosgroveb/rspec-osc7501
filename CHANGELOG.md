@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Support named child records and additive managed formatter activation.
+
 ## 0.1.3 - 2026-11-10
 
 - Support Ruby 2.1 and RSpec 3.6 ([5afb73d](https://github.com/cosgroveb/rspec-osc7501/commit/5afb73d1ededebcafbcb81096e6bb024f791a46c))

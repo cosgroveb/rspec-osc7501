@@ -52,3 +52,19 @@ is <tt>RSpec</tt>.
 
 Set <tt>RSPEC_OSC7501=off</tt> to disable frames without changing the formatter
 configuration. See {Behavior}[rdoc-ref:doc/behavior.rdoc] for settings and limits.
+
+== Run through Rake (optional)
+
+Install <tt>rake-osc7501</tt> alongside this gem and load the RSpec task class
+before the integration in your Rakefile:
+
+  require 'rspec/core/rake_task'
+  require 'rake/osc7501'
+  RSpec::Core::RakeTask.new(:spec)
+
+Run <tt>bundle exec rake spec</tt>. Rake assigns a child record and preloads
+<tt>rspec/osc7501/managed</tt>. Existing formatter choices and their destinations
+remain intact. Without an explicit formatter, ordinary progress remains visible.
+Use <tt>RAKE_OSC7501=off</tt> to disable the parent's automatic activation or
+<tt>RSPEC_OSC7501=off</tt> to silence the child. Child results remain after Rake
+finishes, including a failed child tolerated with <tt>fail_on_error = false</tt>.

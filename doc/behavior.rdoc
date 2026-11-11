@@ -22,8 +22,25 @@ Settings apply when RSpec constructs the formatter.
 
 Other mode values raise ArgumentError. A supporting terminal determines how to
 display status. The formatter sends no capability query and reads no stdin.
-Use one reporting RSpec process per terminal. Concurrent processes replace the
-same root status record, without worker aggregation.
+Without a child ID, concurrent processes replace the same root status record.
+Managed invocations use separate named records without worker aggregation.
+
+== Managed child context
+
+<tt>RSPEC_OSC7501_ID</tt> selects a named record. Omit it for standalone root
+behavior. IDs contain one to eight slash-separated ASCII segments using
+<tt>A-Z a-z 0-9 _ . + -</tt>. Each segment allows 1 to 32 bytes and the whole ID
+allows at most 128 bytes. An empty or invalid ID silences OSC output rather than
+writing to the root record. It leaves ordinary output and exit status unchanged.
+
+The optional <tt>rspec/osc7501/managed</tt> preload selects OSC only with valid
+context and without <tt>RSPEC_OSC7501=off</tt>. It waits for RSpec's configured
+formatters, preserves its default formatter, and adds OSC only when none exists.
+An existing OSC selection keeps its output stream. The preload isolates RSpec's
+private formatter-loader seam to the configured instance.
+
+Managed child records remain after completion. Parent tools report their own
+outcomes. A successful suite summary does not establish later process success.
 
 == Progress and outcomes
 
@@ -70,7 +87,7 @@ exit hook.
 
 == Wire format
 
-Each frame addresses the root record, repeats <tt>app=rspec</tt>, title, and
+Each frame addresses the root record unless a valid child ID is supplied, repeats <tt>app=rspec</tt>, title, and
 message, and ends with ST (ESC followed by a backslash). The formatter writes each
 frame in one call and sends no clear-on-close record.
 
