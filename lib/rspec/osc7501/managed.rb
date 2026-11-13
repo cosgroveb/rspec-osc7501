@@ -4,7 +4,7 @@ require_relative '../osc7501'
 
 module RSpec
   module OSC7501
-    # Selects an additive formatter only for a managed child invocation.
+    # Installs an additive formatter when a managed child ID is present.
     module Managed
       # Isolate RSpec's private formatter-loader seam to this configuration.
       module Loader # :nodoc: all

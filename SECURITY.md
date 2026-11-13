@@ -11,8 +11,9 @@ Older releases do not receive security backports.
 Use [GitHub private vulnerability reporting](https://github.com/cosgroveb/rspec-osc7501/security/advisories/new).
 Do not disclose vulnerabilities in public issues or pull requests.
 
-Include the affected gem, Ruby, and RSpec versions, steps or a small example
-that reproduces the problem, and the impact. Include terminal and tmux versions
+Include the affected gem and RSpec versions you are running. Add your Ruby
+version, plus steps or a small example that reproduces the problem, and
+describe the impact. Include terminal and tmux versions
 when relevant. Remove credentials and unrelated private data from examples.
 
 I review reports and coordinate a fix and public disclosure with the reporter.
