@@ -3,10 +3,10 @@
 Follow the [code of conduct](CODE_OF_CONDUCT.md). Report vulnerabilities through
 the private channel in [SECURITY.md](SECURITY.md).
 
-AI-assisted contributions are welcome. Before requesting review, understand
-the changes, run relevant checks, and verify claims in code, documentation,
-and reports. State what you tested and what remains uncertain. Be prepared to
-explain your choices and address feedback. When using an agent to help answer
+I welcome AI-assisted contributions. Before requesting review, understand
+the changes and verify the claims in the affected code and docs. Run the
+relevant checks. State what you tested and what remains uncertain. Be prepared to
+explain your choices and address feedback. If you use an agent to help answer
 a reviewer, check the answer and send only what is relevant.
 
 Use MRI Ruby 3.3 or newer for development tooling. Install actionlint 1.7.12 on your PATH, then run all checks:
@@ -46,7 +46,7 @@ passing and failing suites without loading the checkout's library.
 
 ## Runtime compatibility
 
-The gem requires MRI Ruby 2.1 or newer and RSpec Core 3.6 or newer.
+The gem targets MRI Ruby 2.1 or newer and RSpec Core 3.6 or newer.
 Use `Gemfile.compat` to test the formatter without modern lint, release or RDoc
 dependencies. On Ruby 2.1, install Bundler 1.17.3 first. Set the RSpec version
 before resolving dependencies:
@@ -65,8 +65,8 @@ Remove `Gemfile.compat.lock` before changing RSpec versions. Keep it out of comm
 The compatibility bundle pins diff-lcs 1.3 so test dependencies install on Ruby 2.1.
 CI checks the oldest Ruby against both RSpec endpoints, the oldest RSpec on modern
 Ruby, and the Debian Bullseye and Bookworm version families. These jobs run the
-formatter suite and installed-gem smoke checks. Modern jobs also test release
-automation, lint and documentation.
+formatter suite and installed-gem smoke checks. The main development job also
+runs lint and documentation checks.
 CI also checks RSpec 4.0.0.beta1 on Ruby 4.0.
 
 Compatibility checks use available patch releases within each Ruby series.
@@ -87,7 +87,7 @@ stable version greater than the current release:
 gh workflow run release.yml --ref main -f version=NEW_VERSION
 ```
 
-The workflow captures `main`, updates `VERSION`, and generates CHANGELOG bullets
+The workflow captures `main` and updates `VERSION`. It generates CHANGELOG bullets
 from non-merge commit subjects since the previous release tag. It preserves
 older changelog sections and uses the same notes for the GitHub Release.
 Versions must use `major.minor.patch` without a `v` prefix or prerelease suffix.
@@ -95,8 +95,8 @@ A new version must exceed the current version and include new commits.
 
 The full CI matrix tests the prepared release commit before the workflow pushes
 it and its tag together. If `main` advances during testing, the workflow stops.
-After the push, it publishes to RubyGems, then creates the GitHub Release. No
-intermediate approval is required.
+After the push, it publishes to RubyGems, then creates the GitHub Release
+without waiting for approval.
 
 If a release fails, inspect its logs and rerun the same version. If its tag
 already exists, the workflow tests and resumes that tagged release instead of

@@ -5,7 +5,7 @@ require 'English'
 module RSpec
   # Reports RSpec suite status through OSC 7501 terminal records.
   module OSC7501
-    # RSpec formatter for suite activity, progress, and final results.
+    # RSpec formatter for suite progress and final results.
     # Select alongside an ordinary formatter to retain RSpec's text output.
     class Formatter
       RSpec::Core::Formatters.register self, :start, :example_started, :example_passed,
@@ -61,7 +61,7 @@ module RSpec
         update
       end
 
-      # Emits the final state, counts, and duration from RSpec's summary.
+      # Emits the final state and counts from RSpec's summary.
       # Final output bypasses throttling and omits progress.
       def dump_summary(notification)
         active_exception = $ERROR_INFO
