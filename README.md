@@ -7,10 +7,13 @@ Requires MRI Ruby 2.1 or newer and `rspec-core >= 3.6`.
 ## Install
 
 ```ruby
-gem "rspec-osc7501", "~> 0.1"
+group :test do
+  gem "rspec"
+  gem "rspec-osc7501", "~> 0.1"
+end
 ```
 
-## Run
+## Run your specs in a terminal that supports OSC 7501:
 
 ```sh
 bundle exec rspec --require rspec/osc7501 \
