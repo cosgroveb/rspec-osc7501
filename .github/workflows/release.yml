@@ -100,7 +100,7 @@ jobs:
             File.open(ENV.fetch("GITHUB_OUTPUT"), "a") { |output| output.puts "published=#{status.fetch("published")}" }
           '
       - if: steps.gem.outputs.published == 'false'
-        uses: rubygems/configure-rubygems-credentials@a3462e5c07dc676007e359eddef1949756fd3102 # main, 2026-11-08
+        uses: rubygems/configure-rubygems-credentials@17e51a8c9fcf6d5f709e04cc612fd105f9273170 # main, 2026-11-08
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
