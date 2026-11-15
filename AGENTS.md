@@ -18,7 +18,16 @@ bundle exec rake rdoc
 
 The gem goes in `pkg/`. RDoc goes in `tmp/rdoc/`.
 
-If a release fails, inspect the logs and rerun the same version to finish missing steps.
+Pre-1.0, no API-stability promise. Two interfaces: the Ruby API
+(formatter registration and preserved RSpec behavior) and the emitted
+escape sequences, which consumers parse. OSC 7501 frames must keep
+conforming. Patch for fixes, minor for new behavior including added
+sequences; removing or changing sequences is breaking.
+
+Release with `script/release.rb prepare <version> <dir>`, build the gem,
+then `publish <dir> <gem>`: the script handles the tag, the atomic main+tag
+push, the RubyGems push and the GitHub release, then verifies the published
+gem. If a release fails, inspect the logs and rerun the same version to finish missing steps.
 
 I prefer ff-only merges for single-commit PRs and squash merges for larger changes.
 Rebase single-commit PRs when needed to fast-forward. Use git first, gh if needed.
