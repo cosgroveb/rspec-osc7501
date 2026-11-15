@@ -44,7 +44,7 @@ class Release
       sha = git('rev-parse', "v#{version}^{commit}")
       raise Error, 'Tag does not match origin' unless sha == existing
 
-      git('merge-base', '--is-ancestor', sha, captured)
+      require_ancestor(sha, captured, "Release tag v#{version} is not in main's history")
       git('checkout', '--detach', sha)
       raise Error, 'Tag version mismatch' unless source_version == version
 
@@ -69,7 +69,7 @@ class Release
       previous = "v#{current}"
       raise Error, 'Previous release tag missing' unless remote_tag(previous)
 
-      git('merge-base', '--is-ancestor', previous, captured)
+      require_ancestor(previous, captured, "Previous release tag #{previous} is not in main's history")
       raise Error, 'Previous tag version mismatch' unless read_version(git('show',
                                                                            "#{previous}:#{VERSION_FILE}")) == current
 
@@ -418,12 +418,32 @@ class Release
     output, error, status = Open3.capture3(*args, chdir: @directory)
     [output, error, status.success?]
   end
+
+  def require_ancestor(ancestor, descendant, failure)
+    _output, _error, success = capture('git', 'merge-base', '--is-ancestor', ancestor, descendant)
+    raise Error, failure unless success
+  end
 end
 
 if $PROGRAM_NAME == __FILE__
+  usage = <<~TEXT
+    Usage: ruby script/release.rb COMMAND [ARGS]
+
+    prepare VERSION DIR     Create the release commit and tag, saving state to DIR
+    restore DIR             Restore the prepared release commit from DIR
+    promote DIR             Push main and the release tag atomically
+    publish DIR GEM         Push the tag, publish to RubyGems and GitHub, verify
+    check-gem GEM           Check whether GEM is published and byte-identical
+    check-release VERSION TAG NOTES
+                           Check whether the GitHub release is published
+    create-release VERSION TAG NOTES
+                           Create the GitHub release for an existing tag
+  TEXT
+
   begin
     release = Release.new
     case ARGV.shift
+    when '--help', '-h', 'help', nil then puts usage
     when 'prepare' then release.prepare(*ARGV)
     when 'restore' then release.restore(*ARGV)
     when 'promote' then release.promote(*ARGV)
@@ -431,7 +451,7 @@ if $PROGRAM_NAME == __FILE__
     when 'check-gem' then puts JSON.generate('published' => release.check_gem(*ARGV))
     when 'check-release' then puts JSON.generate('published' => release.check_release(*ARGV))
     when 'create-release' then release.create_release(*ARGV)
-    else raise Release::Error, 'Expected prepare, restore, promote, publish, check-gem, check-release or create-release'
+    else raise Release::Error, "Unknown command.\n#{usage}"
     end
   rescue Release::Error => e
     warn e.message
