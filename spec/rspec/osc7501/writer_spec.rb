@@ -19,7 +19,7 @@ RSpec.describe RSpec::OSC7501::Writer do
     end
 
     it 'delimits the frame', :aggregate_failures do
-      expect(output.string).to start_with("\e]7501;")
+      expect(output.string).to start_with("\e]2;rspec\e\\\e]7501;")
       expect(output.string).to end_with("\e\\")
     end
 
@@ -31,6 +31,42 @@ RSpec.describe RSpec::OSC7501::Writer do
     it 'leaves the caller stream open' do
       expect(output).not_to be_closed
     end
+  end
+
+  it 'replaces the terminal title immediately before each status frame' do
+    writer.emit(state: 'working', msg: 'running', window_title: 'loads a user')
+    expect(output.string).to start_with("\e]2;rspec › loads a user\e\\")
+  end
+
+  it 'returns the terminal title to the prefix on final states' do
+    writer.emit(state: 'done', msg: 'complete')
+    expect(output.string).to start_with("\e]2;rspec\e\\")
+  end
+
+  context 'with an unsanitizable window title' do
+    let(:title) { output.string[/\A\e\]2;([^\e]*)\e\\/, 1] }
+
+    before do
+      writer.emit(state: 'working', msg: 'ok',
+                  window_title: "\e\xFF\n".b.force_encoding('UTF-8') + "\a界" * 3000)
+    end
+
+    it 'bounds the composed title including the prefix' do
+      expect(title.bytesize).to be <= 512
+    end
+
+    it 'sanitizes like messages' do
+      expect(title).to be_valid_encoding
+    end
+
+    it 'keeps the prefix' do
+      expect(title).to start_with('rspec › ')
+    end
+  end
+
+  it 'falls back to the bare prefix for an empty window title' do
+    writer.emit(state: 'working', msg: 'ok', window_title: "\u0000\u007F")
+    expect(output.string).to start_with("\e]2;rspec\e\\")
   end
 
   it 'writes a bounded nested record without changing text limits', :aggregate_failures do
@@ -149,7 +185,7 @@ RSpec.describe RSpec::OSC7501::Writer do
       end
 
       it 'emits one complete bounded frame', :aggregate_failures do
-        expect(output.string).to match(%r{\A\e\]7501;app=rspec:title=[A-Za-z0-9+/=]*:state=working:
+        expect(output.string).to match(%r{\A\e\]2;rspec\e\\\e\]7501;app=rspec:title=[A-Za-z0-9+/=]*:state=working:
                                          msg=[A-Za-z0-9+/=]*:progress=50\e\\\z}x)
         expect(output.string.bytesize).to be <= 4096
       end

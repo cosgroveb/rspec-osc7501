@@ -23,6 +23,11 @@ bundle exec rspec --require rspec/osc7501 \
 Keep `--format progress` to see RSpec's dots and summary. Requiring
 `rspec/osc7501` registers the formatter without selecting it.
 
+Reporting also sets the terminal title. While examples run, the title is
+`rspec › <current example>`. The title returns to `rspec` on completion,
+failure, and interruption. Titles are sanitized and capped at 512 bytes
+including the `rspec › ` prefix.
+
 ## Configure
 
 | Environment variable | Values | Default |

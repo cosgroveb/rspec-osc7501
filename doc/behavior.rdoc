@@ -97,6 +97,11 @@ replaces invalid encoding, and truncates on character boundaries. Decoded titles
 are at most 192 bytes, decoded messages at most 2048 bytes, and frames at most
 4096 bytes.
 
+Each status update is preceded by an OSC 2 window title: <tt>rspec › example</tt>
+while an example runs, the bare prefix <tt>rspec</tt> otherwise. Window titles are
+sanitized like messages, truncated on character boundaries, and at most 512 bytes
+including the prefix.
+
 Before sanitization, the formatter keeps at most 288 input bytes for titles and
 3072 for messages. This bounds sanitization work with 50% headroom for stripped
 controls. Control-heavy input can produce shorter output. A character split by
