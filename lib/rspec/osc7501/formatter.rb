@@ -92,7 +92,7 @@ module RSpec
         message += ", #{@failed} failures" if @failed > 0
         message += ", #{@pending} pending" if @pending > 0
         message += ": #{@current}" if @current
-        @writer.emit(state: 'working', msg: message, progress: progress)
+        @writer.emit(state: 'working', msg: message, progress: progress, window_title: @current)
         @last_update = now
       end
 
