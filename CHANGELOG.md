@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-11-15
+
+- Tighten repo prose and code comments ([ad3fb64](https://github.com/cosgroveb/rspec-osc7501/commit/ad3fb64399f0b72783551d8bd42eb5dfe0116e07))
+- Restore README install group and run context ([a043720](https://github.com/cosgroveb/rspec-osc7501/commit/a043720de24775d7b76bfcc6fcbf22cab5773469))
+- Add version policy and release script usability fixes ([26257be](https://github.com/cosgroveb/rspec-osc7501/commit/26257be86d020c8ddb855c79efdf1ad27d1a8da5))
+- Show the current example in the terminal title \(\#20\) ([f751207](https://github.com/cosgroveb/rspec-osc7501/commit/f7512077e22b463ad068f091de2ef5512f09739b))
+
 ## 0.1.4 - 2026-11-11
 
 - Allow newer RSpec versions and test RSpec 4 ([a3f8f5d](https://github.com/cosgroveb/rspec-osc7501/commit/a3f8f5decaf8d27328dd9dcc14536b8b8f4a35cb))
