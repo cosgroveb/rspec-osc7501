@@ -30,7 +30,7 @@ jobs:
           ref: main
           fetch-depth: 0
           persist-credentials: false
-      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+      - uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1
         with:
           ruby-version: "3.4"
           bundler-cache: false
@@ -77,7 +77,7 @@ jobs:
         with:
           name: ${{ needs.prepare.outputs.artifact }}
           path: ${{ runner.temp }}/release
-      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+      - uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1
         with:
           ruby-version: "3.4"
           bundler-cache: false
@@ -85,7 +85,7 @@ jobs:
         run: |
           cp script/release.rb "$RUNNER_TEMP/release-runner.rb"
           ruby "$RUNNER_TEMP/release-runner.rb" restore "$RUNNER_TEMP/release"
-      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+      - uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1
         with:
           ruby-version: "3.4"
           bundler-cache: true

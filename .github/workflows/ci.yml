@@ -97,14 +97,14 @@ jobs:
           name: ${{ inputs.release-artifact }}
           path: ${{ runner.temp }}/release
       - if: inputs.release-artifact != ''
-        uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+        uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1
         with:
           ruby-version: "3.4"
           bundler: none
           bundler-cache: false
       - if: inputs.release-artifact != ''
         run: ruby script/release.rb restore "$RUNNER_TEMP/release"
-      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1
+      - uses: ruby/setup-ruby@20eb24b0d509e2b9ed9b6d42ddfeb992915e0564 # v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler: ${{ matrix.bundler || 'default' }}
